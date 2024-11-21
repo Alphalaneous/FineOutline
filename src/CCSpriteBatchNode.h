@@ -23,7 +23,7 @@ public:
 
 class $modify(MyCCSpriteBatchNode, CCSpriteBatchNode) {
 	struct Fields {
-		CCSpriteBatchNode* m_self;
+		Ref<CCSpriteBatchNode> m_self;
 		~Fields() {
             BatchHandler::get().m_batchNodes.erase(m_self);
         }
