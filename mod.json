@@ -1,5 +1,5 @@
 {
-	"geode": "4.0.1",
+	"geode": "4.0.0-beta.1",
 	"gd": {
 		"win": "2.2074",
 		"android": "2.2074",
@@ -8,7 +8,7 @@
 	},
 	"id": "alphalaneous.fine_outline",
 	"name": "Fine Outline",
-	"version": "v1.0.10",
+	"version": "v1.0.9",
 	"developer": "Alphalaneous",
 	"description": "Change the black outline color of icons!",
 	"dependencies": [
