@@ -22,15 +22,14 @@ public:
 #define DO_FAKE(method) if (!BatchHandler::get().isFake(this)) CCSpriteBatchNode::method; else CCNode::method;
 
 class $modify(MyCCSpriteBatchNode, CCSpriteBatchNode) {
-	struct Fields {
-		CCSpriteBatchNode* m_self;
-		~Fields() {
-            BatchHandler::get().m_batchNodes.erase(m_self);
-        }
-	};
+
+	void destructor() {
+        BatchHandler::get().m_batchNodes.erase(this);
+        CCSpriteBatchNode::~CCSpriteBatchNode();
+    }
+
 	static CCSpriteBatchNode* createWithTexture(CCTexture2D* tex, unsigned int capacity) {
         auto ret = CCSpriteBatchNode::createWithTexture(tex, capacity);
-		static_cast<MyCCSpriteBatchNode*>(ret)->m_fields->m_self = ret;
 		BatchHandler::get().m_batchNodes[ret] = false;
 		return ret;
     }
