@@ -7,7 +7,6 @@ void ShaderCache::init() {
 }
 
 void ShaderCache::add(std::string name, CCGLProgram* program) {
-    program->retain();
     m_shaders->setObject(program, name);
 }
 
@@ -25,7 +24,7 @@ void ShaderCache::createShader(std::string name, std::string frag) {
     prg->addAttribute(kCCAttributeNameColor, kCCVertexAttrib_Color);
     prg->addAttribute(kCCAttributeNameTexCoord, kCCVertexAttrib_TexCoords);
     
-    prg->retain();
+    prg->autorelease();
     prg->link();
     prg->updateUniforms();
     add(name, prg);

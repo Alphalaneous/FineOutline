@@ -15,7 +15,8 @@
 using namespace geode::prelude;
 
 void loadShaders() {
-	
+	bool alt = Mod::get()->getSettingValue<bool>("alternative-shader");
+
 	std::string fragIcon = R"(
 		#ifdef GL_ES
 		precision mediump float;
@@ -35,6 +36,21 @@ void loadShaders() {
 			gl_FragColor = v_fragmentColor * c;
 		}
 	)";
+	if (alt) {
+		fragIcon = R"(
+			#ifdef GL_ES
+			precision mediump float;
+			#endif
+
+			varying vec4 v_fragmentColor;
+			varying vec2 v_texCoord;
+			uniform sampler2D CC_Texture0;
+
+			void main() {
+				gl_FragColor = texture2D(CC_Texture0, v_texCoord) * v_fragmentColor;
+			}
+		)";
+	}
 
 	ShaderCache::get()->createShader("icon", fragIcon);
 
@@ -59,12 +75,34 @@ void loadShaders() {
 			gl_FragColor = v_fragmentColor * c;
 		}
 	)";
+	if (alt) {
+		fragOutline = R"(
+			#ifdef GL_ES
+			precision mediump float;
+			#endif
+
+			varying vec4 v_fragmentColor;
+			varying vec2 v_texCoord;
+			uniform sampler2D CC_Texture0;
+
+			void main() {
+				vec4 c = texture2D(CC_Texture0, v_texCoord);
+				float brightness = dot(c.rgb, vec3(1./3.)) / c.a;
+				float isOutline = smoothstep(0.9, 0.0, brightness);
+				c = vec4(c.a * isOutline);
+				gl_FragColor = c * v_fragmentColor;
+			}
+		)";
+	}
 
 	ShaderCache::get()->createShader("outline", fragOutline);
 };
 
 $on_mod(Loaded) {
 	loadShaders();
+	listenForSettingChanges("alternative-shader", [](bool) {
+		loadShaders();
+	});
 }
 
 class $modify(MyGameManager, GameManager) {
@@ -87,6 +125,8 @@ void removeShaders(CCSprite* spr) {
 void updateSprite(CCSprite* spr, ccColor3B color = {0, 0, 0}) {
 	if (!spr || color == ccColor3B{0, 0, 0}) return;
 
+	bool alt = Mod::get()->getSettingValue<bool>("alternative-shader");
+
 	spr->setCascadeOpacityEnabled(true);
 
 	CCSprite* blackOutline = CCSprite::createWithSpriteFrame(spr->displayFrame());
@@ -100,14 +140,16 @@ void updateSprite(CCSprite* spr, ccColor3B color = {0, 0, 0}) {
 		prgOutline->setUniformsForBuiltins();
 		blackOutline->setShaderProgram(prgOutline);
 		prgOutline->use();
-		blackOutline->setBlendFunc({GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA});
+		if (!alt)
+			blackOutline->setBlendFunc({GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA});
 	}
 
 	if (CCGLProgram* progIcon = ShaderCache::get()->getProgram("icon")) {
 		progIcon->setUniformsForBuiltins();
 		spr->setShaderProgram(progIcon);
 		progIcon->use();
-		spr->setBlendFunc({GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA});
+		if (!alt)
+			spr->setBlendFunc({GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA});
 	}
 
 	spr->removeChildByID("black_outline"_spr);
