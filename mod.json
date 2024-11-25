@@ -23,5 +23,13 @@
         "source": "https://github.com/Alphalaneous/FineOutline",
         "community": "https://discord.gg/Txn2CA5dHF"
     },
-	"tags": ["enhancement", "customization"]
+	"tags": ["enhancement", "customization"],
+	"settings": {
+		"alternative-shader": {
+			"type": "bool",
+			"default": false,
+			"name": "Alternative Shader",
+			"description": "Use an alternative shader for the outline. This may work better on some icons, but can look bad on lighter outlines"
+		}
+	}
 }
