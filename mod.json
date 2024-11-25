@@ -28,7 +28,7 @@
 		"alternative-shader": {
 			"type": "bool",
 			"default": false,
-			"name": "Alternative Shader",
+			"name": "Alternative Isolation Shader",
 			"description": "Use an alternative shader for the outline. This may work better on some icons, but can look bad on lighter outlines"
 		}
 	}
