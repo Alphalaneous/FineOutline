@@ -99,6 +99,11 @@ void loadShaders() {
 };
 
 $on_mod(Loaded) {
+
+	if (Mod::get()->hasSavedValue("p1-color") && !Mod::get()->hasSavedValue("override-color")) {
+		Mod::get()->setSavedValue("override-color", true);
+	}
+
 	loadShaders();
 	listenForSettingChanges("alternative-shader", [](bool) {
 		loadShaders();
