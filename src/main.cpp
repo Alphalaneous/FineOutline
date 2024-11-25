@@ -171,7 +171,16 @@ class $modify(MySimplePlayer, SimplePlayer) {
 	void updatePlayerShaders(bool dual) {
 		m_fields->m_isShaderSpr = true;
 		m_fields->m_shaderSprDual = dual;
-		ccColor3B outlineColor = Mod::get()->getSavedValue<ccColor3B>(dual ? "p2-color" : "p1-color");
+
+		std::string whichPlayer = dual ? "outline-color-p2" : "outline-color-p1";
+
+		ccColor3B outlineColor;
+		if (Mod::get()->getSavedValue<bool>("override-color")) {
+			outlineColor = Mod::get()->getSavedValue<ccColor3B>(dual ? "p2-color" : "p1-color");
+		}
+		else {
+			outlineColor = GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>(whichPlayer));
+		}
 
 		if (m_robotSprite && m_robotSprite->m_paSprite) {
 			for(CCSpritePart* part : CCArrayExt<CCSpritePart*>(m_robotSprite->m_paSprite->m_spriteParts)) {
@@ -206,8 +215,15 @@ class $modify(MyPlayerObject, PlayerObject) {
 
 		if (!m_gameLayer || !(m_gameLayer->m_player1 == this || m_gameLayer->m_player2 == this)) return;
 
-		ccColor3B outlineColor = Mod::get()->getSavedValue<ccColor3B>(
-			Loader::get()->isModLoaded("weebify.separate_dual_icons") && m_gameLayer->m_player2 == this ? "p2-color" : "p1-color");
+		ccColor3B outlineColor;
+		if (Mod::get()->getSavedValue<bool>("override-color")) {
+			std::string whichPlayer = Loader::get()->isModLoaded("weebify.separate_dual_icons") && m_gameLayer->m_player2 == this ? "p2-color" : "p1-color";
+			outlineColor = Mod::get()->getSavedValue<ccColor3B>(whichPlayer);
+		}
+		else {
+			std::string whichPlayer = Loader::get()->isModLoaded("weebify.separate_dual_icons") && m_gameLayer->m_player2 == this ? "outline-color-p2" : "outline-color-p1";
+			outlineColor = GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>(whichPlayer));
+		}
 
 		updateSprite(m_iconSprite, outlineColor);
 		updateSprite(m_vehicleSprite, outlineColor);
@@ -439,22 +455,27 @@ class $modify(MyGJGarageLayer, GJGarageLayer) {
 class OutlineColorPickPopupDelegate : public ColorPickPopupDelegate {
     
 	Ref<CCArray> m_icons;
+	Ref<CCMenuItemSpriteExtra> m_colorBtn;
 	bool m_dual = false;
 	public:
-	void init(CCArray* icons, bool dual) {
+	void init(CCArray* icons, CCMenuItemSpriteExtra* btn, bool dual) {
 		m_icons = icons;
 		m_dual = dual;
+		m_colorBtn = btn;
 	}
 
 	void updateColor(ccColor4B const& c) {
 
-		for (CCNode* children : CCArrayExt<CCNode*>(m_icons)) {
-			if (SimplePlayer* player = typeinfo_cast<SimplePlayer*>(children)) {
-				static_cast<MySimplePlayer*>(player)->setOutlineColor(ccColor3B{c.r, c.g, c.b}, m_dual);
+		if (Mod::get()->getSavedValue<bool>("override-color")) {
+			for (CCNode* children : CCArrayExt<CCNode*>(m_icons)) {
+				if (SimplePlayer* player = typeinfo_cast<SimplePlayer*>(children)) {
+					static_cast<MySimplePlayer*>(player)->setOutlineColor(ccColor3B{c.r, c.g, c.b}, m_dual);
+				}
 			}
+			m_colorBtn->setColor(ccColor3B{c.r, c.g, c.b});
 		}
-		Mod::get()->setSavedValue<ccColor3B>(m_dual ? "p2-color" : "p1-color", ccColor3B{c.r, c.g, c.b});
 
+		Mod::get()->setSavedValue<ccColor3B>(m_dual ? "p2-color" : "p1-color", ccColor3B{c.r, c.g, c.b});
 	}
 };
 
@@ -468,14 +489,38 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 	struct Fields {
 		CCMenuItemSpriteExtra* m_outlineColorBtn;
 		OutlineColorPickPopupDelegate* m_outlineColorDelegate;
-
+		CCMenuItemToggler* m_outlineTab;
+		CCMenuItemToggler* m_customColorToggle;
+		CCSprite* m_outlineSelector;
+		CCLabelBMFont* m_customColorLabel;
 		~Fields() {
 			delete m_outlineColorDelegate;
 		}
 	};
 
-    bool init() {
+	void updateColor(ccColor3B const& c, bool dual) {
+		for (CCNode* children : CCArrayExt<CCNode*>(m_playerObjects)) {
+			if (SimplePlayer* player = typeinfo_cast<SimplePlayer*>(children)) {
+				static_cast<MySimplePlayer*>(player)->setOutlineColor(c, dual);
+			}
+		}
+	}
 
+	void moveToMenu(CCNode* menu, CCMenu* orig, std::string id) {
+		if (CCMenuItemSpriteExtra* btn = typeinfo_cast<CCMenuItemSpriteExtra*>(orig->getChildByID(id.c_str()))) {
+			btn->removeFromParentAndCleanup(false);
+			menu->addChild(btn);
+		}
+	}
+
+	void setOutlineSelectorPos(int color) {
+		CCNode* btn = static_cast<CCNode*>(m_colorButtons->objectForKey(color))->getParent();
+		CCPoint worldSpace = btn->convertToWorldSpace({0, 0});
+		CCPoint nodeSpace = m_mainLayer->convertToNodeSpace(worldSpace);
+		m_fields->m_outlineSelector->setPosition(nodeSpace + btn->getScaledContentSize()/2);
+	}
+
+    bool init() {
 		if (!CharacterColorPage::init()) return false;
 
  		m_fields->m_outlineColorDelegate = new OutlineColorPickPopupDelegate();
@@ -488,37 +533,181 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 			}
 		}
 
-		CCSprite* outlineColorSpr = CCSprite::createWithSpriteFrameName("GJ_paintBtn_001.png");
-		outlineColorSpr->setScale(0.5);
+		int outlineColor = Mod::get()->getSavedValue<int64_t>(dual ? "outline-color-p2" : "outline-color-p1", 15);
+
+		m_fields->m_outlineSelector = CCSprite::createWithSpriteFrameName("GJ_select_001.png");
+		m_fields->m_outlineSelector->setColor({50, 50, 50});
+		m_fields->m_outlineSelector->setScale(0.7f);
+		m_fields->m_outlineSelector->setZOrder(1);
+		m_fields->m_outlineSelector->setID("cursor-line"_spr);
+
+		m_mainLayer->addChild(m_fields->m_outlineSelector);
+		setOutlineSelectorPos(outlineColor);
+
+		CCSprite* outlineColorSpr = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
+		outlineColorSpr->setScale(0.65f);
+
+		CCMenu* colorTabsMenu = CCMenu::create();
+		colorTabsMenu->setID("color-tabs-menu"_spr);
+		colorTabsMenu->setAnchorPoint({1.f, 1.f});
+		if (CCNode* bg = m_mainLayer->getChildByID("background")) {
+			colorTabsMenu->setPosition(m_mainLayer->getContentSize()/2);
+			colorTabsMenu->setPositionX(colorTabsMenu->getPositionX() + 214);
+			colorTabsMenu->setPositionY(colorTabsMenu->getPositionY() + 142);
+		}
+
+		m_mainLayer->addChild(colorTabsMenu);
+
+		RowLayout* rowLayout = RowLayout::create();
+		rowLayout->setGap(0);
+		rowLayout->setAutoScale(false);
+		rowLayout->setAxisAlignment(AxisAlignment::End);
+
+		colorTabsMenu->setLayout(rowLayout);
 
 		m_fields->m_outlineColorBtn = CCMenuItemSpriteExtra::create(outlineColorSpr, this, menu_selector(MyCharacterColorPage::onOutlineColor));
 		m_fields->m_outlineColorBtn->setVisible(false);
+		m_fields->m_outlineColorBtn->setID("outline-color-button"_spr);
+		m_fields->m_outlineColorBtn->setColor(Mod::get()->getSavedValue<ccColor3B>(dual ? "p2-color" : "p1-color"));
+
+		m_fields->m_customColorToggle = CCMenuItemToggler::createWithStandardSprites(this, menu_selector(MyCharacterColorPage::onCustomColorToggle), 0.6f);
+		m_fields->m_customColorToggle->setID("custom-color-toggle"_spr);
+		m_fields->m_customColorToggle->setVisible(false);
+		m_fields->m_customColorToggle->setPosition(m_glowToggler->getPosition());
+		m_fields->m_customColorToggle->toggle(Mod::get()->getSavedValue<bool>("override-color"));
+
 		if (CCMenu* buttonsMenu = typeinfo_cast<CCMenu*>(m_mainLayer->getChildByID("buttons-menu"))) {
 
-			m_fields->m_outlineColorBtn->setPosition({m_glowToggler->getPosition().x + 74, m_glowToggler->getPosition().y});
+			m_fields->m_outlineColorBtn->setPosition({m_glowToggler->getPosition().x + 73, m_glowToggler->getPosition().y});
 			buttonsMenu->addChild(m_fields->m_outlineColorBtn);
 			if (CCMenuItemSpriteExtra* closeButton = typeinfo_cast<CCMenuItemSpriteExtra*>(buttonsMenu->getChildByID("close-button"))) {
 				closeButton->m_pfnSelector = menu_selector(MyCharacterColorPage::onCloseH);
 			}
+
+			moveToMenu(colorTabsMenu, buttonsMenu, "col1-button");
+			moveToMenu(colorTabsMenu, buttonsMenu, "col2-button");
+			moveToMenu(colorTabsMenu, buttonsMenu, "glow-button");
+
+			buttonsMenu->addChild(m_fields->m_customColorToggle);
 		}
+
+		ButtonSprite* greySpr = ButtonSprite::create("Line", 40, false, "bigFont.fnt", "GJ_button_04.png", 20, 0.4);
+		greySpr->setScale(0.85f);
+		ButtonSprite* greenSpr = ButtonSprite::create("Line", 40, false, "bigFont.fnt", "GJ_button_01.png", 20, 0.4);
+		greenSpr->setScale(0.85f);
+
+		m_fields->m_outlineTab = CCMenuItemToggler::create(greySpr, greenSpr, this, menu_selector(MyCharacterColorPage::onMode));
+		m_fields->m_outlineTab->setContentSize(greySpr->getContentSize());
+		m_fields->m_outlineTab->setTag(3);
+		m_fields->m_outlineTab->setID("outline-button"_spr);
+		colorTabsMenu->addChild(m_fields->m_outlineTab);
 		
+		colorTabsMenu->updateLayout();
+
+		m_fields->m_customColorLabel = CCLabelBMFont::create("Custom", "bigFont.fnt");
+		m_fields->m_customColorLabel->setAnchorPoint({0, 0.5f});
+		m_fields->m_customColorLabel->setScale(0.3f);
+		m_fields->m_customColorLabel->setPosition(m_glowLabel->getPosition());
+		m_fields->m_customColorLabel->setVisible(false);
+
+		m_mainLayer->addChild(m_fields->m_customColorLabel);
+		
+		m_fields->m_outlineTab->toggle(false);
 		return true;
+	}
+
+	void onCustomColorToggle(CCObject* sender) {
+		bool toggled = !static_cast<CCMenuItemToggler*>(sender)->isToggled();
+		
+		Mod::get()->setSavedValue<bool>("override-color", toggled);
+		m_fields->m_outlineColorBtn->setVisible(Mod::get()->getSavedValue<bool>("override-color"));
+
+		auto sdi = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
+		auto dual = sdi && sdi->getSavedValue<bool>("2pselected");
+
+		if (!Mod::get()->getSavedValue<bool>("override-color")) {
+			updateColor(GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>(dual ? "outline-color-p2" : "outline-color-p1")), dual);
+		}
+		else {
+			updateColor(Mod::get()->getSavedValue<ccColor3B>(dual ? "p2-color" : "p1-color"), dual);
+		}
 	}
 
 	void onOutlineColor(CCObject* sender) {
 		auto sdi = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
 		auto dual = sdi && sdi->getSavedValue<bool>("2pselected");
 		geode::ColorPickPopup* colorPopup = geode::ColorPickPopup::create(Mod::get()->getSavedValue<ccColor3B>(dual ? "p2-color" : "p1-color"));
-		m_fields->m_outlineColorDelegate->init(m_playerObjects, dual);
+		m_fields->m_outlineColorDelegate->init(m_playerObjects, m_fields->m_outlineColorBtn, dual);
 		colorPopup->setDelegate(m_fields->m_outlineColorDelegate);
 		colorPopup->show();
 	}
 
-    void onMode(CCObject* sender) {
-		CharacterColorPage::onMode(sender);
-		m_fields->m_outlineColorBtn->setVisible(m_colorMode == 2);
+	void showLocksForTab(int tab) {
+		
+		switch (tab) {
+		case 0:
+			for (auto obj : CCDictionaryExt<int, ColorChannelSprite*>(m_colorButtons)) {
+				if (CCNode* child = obj.second->getChildByTag(100)) {
+					child->setVisible(!GameManager::get()->isColorUnlocked(obj.first, UnlockType::Col1));
+				}
+			}
+			break;
+		case 1:
+		case 2:
+			for (auto obj : CCDictionaryExt<int, ColorChannelSprite*>(m_colorButtons)) {
+				if (CCNode* child = obj.second->getChildByTag(100)) {
+					child->setVisible(!GameManager::get()->isColorUnlocked(obj.first, UnlockType::Col2));
+				}
+			}
+			break;
+		case 3:
+			for (auto obj : CCDictionaryExt<int, ColorChannelSprite*>(m_colorButtons)) {
+				if (CCNode* child = obj.second->getChildByTag(100)) {
+					child->setVisible(false);
+				}
+			}
+			break;
+		}
 	}
 
+    void onMode(CCObject* sender) {
+		CharacterColorPage::onMode(sender);
+
+		m_colorMode = sender->getTag();
+		m_fields->m_outlineColorBtn->setVisible(m_colorMode == 3 && Mod::get()->getSavedValue<bool>("override-color"));
+		m_fields->m_customColorToggle->setVisible(m_colorMode == 3);
+		m_fields->m_customColorLabel->setVisible(m_colorMode == 3);
+
+		showLocksForTab(m_colorMode);
+		
+		if (m_colorMode != 3) {
+			m_fields->m_outlineSelector->setColor({50, 50, 50});
+			m_fields->m_outlineTab->toggle(false);
+			m_fields->m_outlineTab->setClickable(true);
+			m_fields->m_outlineSelector->setZOrder(1);
+		}
+		else {
+			m_fields->m_outlineSelector->setColor({255, 255, 255});
+			m_fields->m_outlineTab->toggle(true);
+			m_fields->m_outlineTab->setClickable(false);
+			m_fields->m_outlineSelector->setZOrder(11);
+		}
+	}
+
+    void onPlayerColor(cocos2d::CCObject* sender) {
+		if (m_colorMode == 3) {
+			auto sdi = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
+			auto dual = sdi && sdi->getSavedValue<bool>("2pselected");
+			Mod::get()->setSavedValue<int64_t>(dual ? "outline-color-p2" : "outline-color-p1", sender->getTag());
+			setOutlineSelectorPos(sender->getTag());
+			if (!Mod::get()->getSavedValue<bool>("override-color")) {
+				updateColor(GameManager::get()->colorForIdx(sender->getTag()), dual);
+			}
+		}
+		else {
+			CharacterColorPage::onPlayerColor(sender);
+		}
+	}
 
     void toggleShip(CCObject* sender) {
 		CharacterColorPage::toggleShip(sender);
@@ -538,10 +727,20 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 		CCScene* scene = CCDirector::get()->m_pRunningScene;
 		if (GJGarageLayer* garage = scene->getChildByType<GJGarageLayer>(0)) {
 			if (garage->m_playerObject) {
-				static_cast<MySimplePlayer*>(garage->m_playerObject)->setOutlineColor(Mod::get()->getSavedValue<ccColor3B>("p1-color"), false);
+				if (Mod::get()->getSavedValue<bool>("override-color")) {
+					static_cast<MySimplePlayer*>(garage->m_playerObject)->setOutlineColor(Mod::get()->getSavedValue<ccColor3B>("p1-color"), false);	
+				}
+				else {
+					static_cast<MySimplePlayer*>(garage->m_playerObject)->setOutlineColor(GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>("outline-color-p1")), false);
+				}
 			}
 			if (SimplePlayer* player2 = typeinfo_cast<SimplePlayer*>(garage->getChildByID("player2-icon"))) {
-				static_cast<MySimplePlayer*>(player2)->setOutlineColor(Mod::get()->getSavedValue<ccColor3B>("p2-color"), true);
+				if (Mod::get()->getSavedValue<bool>("override-color")) {
+					static_cast<MySimplePlayer*>(player2)->setOutlineColor(Mod::get()->getSavedValue<ccColor3B>("p2-color"), true);
+				}
+				else {
+					static_cast<MySimplePlayer*>(player2)->setOutlineColor(GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>("outline-color-p2")), true);
+				}
 			}
 		}
 	}
@@ -566,7 +765,13 @@ class $modify(MyCommentCell, CommentCell) {
 
 		if (p0->m_accountID == GJAccountManager::get()->m_accountID){
 			if (SimplePlayer* player = typeinfo_cast<SimplePlayer*>(getChildByIDRecursive("player-icon"))) {
-				static_cast<MySimplePlayer*>(player)->setOutlineColor(Mod::get()->getSavedValue<ccColor3B>("p1-color"), false);
+				if (Mod::get()->getSavedValue<bool>("override-color")) {
+					static_cast<MySimplePlayer*>(player)->setOutlineColor(Mod::get()->getSavedValue<ccColor3B>("p1-color"), false);
+				}
+				else {
+					static_cast<MySimplePlayer*>(player)->setOutlineColor(GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>("outline-color-p1")), false);
+				}
+
 			}
 		}
 	}
@@ -580,7 +785,12 @@ class $modify(MyGJScoreCell, GJScoreCell) {
 
 		if (p0->m_accountID == GJAccountManager::get()->m_accountID){
 			if (SimplePlayer* player = typeinfo_cast<SimplePlayer*>(getChildByIDRecursive("player-icon"))) {
-				static_cast<MySimplePlayer*>(player)->setOutlineColor(Mod::get()->getSavedValue<ccColor3B>("p1-color"), false);
+				if (Mod::get()->getSavedValue<bool>("override-color")) {
+					static_cast<MySimplePlayer*>(player)->setOutlineColor(Mod::get()->getSavedValue<ccColor3B>("p1-color"), false);
+				}
+				else {
+					static_cast<MySimplePlayer*>(player)->setOutlineColor(GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>("outline-color-p1")), false);
+				}
 			}
 		}
 	}

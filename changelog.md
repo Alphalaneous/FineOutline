@@ -1,3 +1,10 @@
+# 1.1.0
+- Revamp custom line colors to have a separate color tab
+- Have optional separate color isolator to try if colors look weird on your icon
+
+# 1.0.10/11
+- 2.2074 support
+
 # 1.0.9
 - Fix a typo in the description
 
