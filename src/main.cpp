@@ -226,7 +226,7 @@ class $modify(MySimplePlayer, SimplePlayer) {
 			outlineColor = Mod::get()->getSavedValue<ccColor3B>(dual ? "p2-color" : "p1-color");
 		}
 		else {
-			outlineColor = GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>(whichPlayer));
+			outlineColor = GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>(whichPlayer, 15));
 		}
 
 		if (m_robotSprite && m_robotSprite->m_paSprite) {
@@ -256,6 +256,15 @@ class $modify(MyPlayerObject, PlayerObject) {
 
 	static void onModify(auto& self) {
         (void)self.setHookPriority("PlayerObject::playSpawnEffect", -2);
+        (void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerFrame", "hiimjustin000.more_icons");
+        (void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerShipFrame", "hiimjustin000.more_icons");
+        (void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerRollFrame", "hiimjustin000.more_icons");
+        (void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerBirdFrame", "hiimjustin000.more_icons");
+        (void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerDartFrame", "hiimjustin000.more_icons");
+        (void)self.setHookPriorityAfterPost("PlayerObject::createRobot", "hiimjustin000.more_icons");
+        (void)self.setHookPriorityAfterPost("PlayerObject::createSpider", "hiimjustin000.more_icons");
+        (void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerSwingFrame", "hiimjustin000.more_icons");
+        (void)self.setHookPriorityAfterPost("PlayerObject::updatePlayerJetpackFrame", "hiimjustin000.more_icons");
     }
 
 	void updatePlayerShaders() {
@@ -269,7 +278,7 @@ class $modify(MyPlayerObject, PlayerObject) {
 		}
 		else {
 			std::string whichPlayer = Loader::get()->isModLoaded("weebify.separate_dual_icons") && m_gameLayer->m_player2 == this ? "outline-color-p2" : "outline-color-p1";
-			outlineColor = GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>(whichPlayer));
+			outlineColor = GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>(whichPlayer, 15));
 		}
 
 		updateSprite(m_iconSprite, outlineColor);
@@ -555,6 +564,10 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 
 	void moveToMenu(CCNode* menu, CCMenu* orig, std::string id) {
 		if (CCMenuItemSpriteExtra* btn = typeinfo_cast<CCMenuItemSpriteExtra*>(orig->getChildByID(id.c_str()))) {
+			CCMenuItemSpriteExtra* dummyBtn = CCMenuItemSpriteExtra::create(CCSprite::create(), btn->m_pListener, btn->m_pfnSelector);
+			dummyBtn->setID(btn->getID());
+			dummyBtn->setVisible(false);
+			btn->getParent()->addChild(dummyBtn);
 			btn->removeFromParentAndCleanup(false);
 			menu->addChild(btn);
 		}
@@ -609,6 +622,7 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 		rowLayout->setGap(0);
 		rowLayout->setAutoScale(false);
 		rowLayout->setAxisAlignment(AxisAlignment::End);
+		rowLayout->ignoreInvisibleChildren(true);
 
 		colorTabsMenu->setLayout(rowLayout);
 
@@ -660,6 +674,17 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 		m_mainLayer->addChild(m_fields->m_customColorLabel);
 		
 		m_fields->m_outlineTab->toggle(false);
+
+		queueInMainThread([this] {
+			if (CCNode* parent = getParent()) {
+				if (parent->getID() != "GJGarageLayer") {
+					m_fields->m_outlineTab->setVisible(false);
+					m_fields->m_outlineTab->getParent()->updateLayout();
+					m_fields->m_outlineSelector->setVisible(false);
+				}
+			}
+		});
+
 		return true;
 	}
 
@@ -673,7 +698,7 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 		auto dual = sdi && sdi->getSavedValue<bool>("2pselected");
 
 		if (!Mod::get()->getSavedValue<bool>("override-color")) {
-			updateColor(GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>(dual ? "outline-color-p2" : "outline-color-p1")), dual);
+			updateColor(GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>(dual ? "outline-color-p2" : "outline-color-p1", 15)), dual);
 		}
 		else {
 			updateColor(Mod::get()->getSavedValue<ccColor3B>(dual ? "p2-color" : "p1-color"), dual);
@@ -778,7 +803,7 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 					static_cast<MySimplePlayer*>(garage->m_playerObject)->setOutlineColor(Mod::get()->getSavedValue<ccColor3B>("p1-color"), false);	
 				}
 				else {
-					static_cast<MySimplePlayer*>(garage->m_playerObject)->setOutlineColor(GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>("outline-color-p1")), false);
+					static_cast<MySimplePlayer*>(garage->m_playerObject)->setOutlineColor(GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>("outline-color-p1", 15)), false);
 				}
 			}
 			if (SimplePlayer* player2 = typeinfo_cast<SimplePlayer*>(garage->getChildByID("player2-icon"))) {
@@ -786,7 +811,7 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 					static_cast<MySimplePlayer*>(player2)->setOutlineColor(Mod::get()->getSavedValue<ccColor3B>("p2-color"), true);
 				}
 				else {
-					static_cast<MySimplePlayer*>(player2)->setOutlineColor(GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>("outline-color-p2")), true);
+					static_cast<MySimplePlayer*>(player2)->setOutlineColor(GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>("outline-color-p2", 15)), true);
 				}
 			}
 		}

@@ -1,3 +1,8 @@
+# 1.1.1
+- Fix issue with Custom Gamemode Colors
+- Fix issue where default black outline wasn't being set properly
+- *Maybe* fix issue where More Icons icons use the wrong outline
+
 # 1.1.0
 - Revamp custom line colors to have a separate color tab
 - Have optional separate color isolator to try if colors look weird on your icon
