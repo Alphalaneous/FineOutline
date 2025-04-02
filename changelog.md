@@ -1,3 +1,6 @@
+# 1.1.2
+- iOS support
+
 # 1.1.1
 - Fix issue with Custom Gamemode Colors
 - Fix issue where default black outline wasn't being set properly
