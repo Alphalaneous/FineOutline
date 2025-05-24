@@ -1,3 +1,6 @@
+# 1.1.5
+- Fix a crash with More Icons
+
 # 1.1.4
 - Less invasive code
 

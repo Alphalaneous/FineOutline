@@ -22,9 +22,12 @@ class DummyCCSpriteBatchNode : public CCSpriteBatchNode {
     FORWARD_BASE(void, reorderChild, (CCNode* p0, int p1), (p0, p1));
     FORWARD_BASE(void, removeChild, (CCNode* p0, bool p1), (p0, p1));
     FORWARD_BASE(void, removeAllChildrenWithCleanup, (bool p1), (p1));
-    FORWARD_BASE(void, sortAllChildren, (), ());
 
-    virtual void draw(void) {
+    virtual void sortAllChildren() {
+        CCNode::sortAllChildren();
+    }
+
+    virtual void draw() {
         CCNode::draw();
     }
 
