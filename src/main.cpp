@@ -9,8 +9,8 @@
 #include <Geode/modify/GJGarageLayer.hpp>
 #include <Geode/modify/CommentCell.hpp>
 #include <Geode/modify/GJScoreCell.hpp>
-#include "CCSpriteBatchNode.h"
 #include "ShaderCache.h"
+#include "DummyCCSpriteBatchNode.h"
 
 using namespace geode::prelude;
 
@@ -330,13 +330,25 @@ class $modify(MyPlayerObject, PlayerObject) {
 		updatePlayerShaders();
     }
 
+	void* getCustomVTablePtr() {
+		static void* vtable = []() -> void* {
+			DummyCCSpriteBatchNode node;
+			return *(void**)&node;
+		}();
+		return vtable;
+	}
+
+	void replaceBatchWithNode(CCSpriteBatchNode* batchNode) {
+		DummyCCSpriteBatchNode node;
+    	*reinterpret_cast<void**>(batchNode) = getCustomVTablePtr();
+	}
+
     void createRobot(int frame) {
         PlayerObject::createRobot(frame);
-
-		static_cast<MyCCSpriteBatchNode*>(m_robotBatchNode)->setFake(true);
+		replaceBatchWithNode(m_robotBatchNode);
 
 		if (m_robotSprite && m_robotSprite->m_paSprite) {
-			for(CCSpritePart* part : CCArrayExt<CCSpritePart*>(m_robotSprite->m_paSprite->m_spriteParts)) {
+			for (CCSpritePart* part : CCArrayExt<CCSpritePart*>(m_robotSprite->m_paSprite->m_spriteParts)) {
 				updateSprite(part);
 			}
 		}
@@ -344,8 +356,7 @@ class $modify(MyPlayerObject, PlayerObject) {
 
     void createSpider(int frame) {
         PlayerObject::createSpider(frame);
-
-		static_cast<MyCCSpriteBatchNode*>(m_spiderBatchNode)->setFake(true);
+		replaceBatchWithNode(m_spiderBatchNode);
 
 		if (m_spiderSprite && m_spiderSprite->m_paSprite) {
 			for(CCSpritePart* part : CCArrayExt<CCSpritePart*>(m_spiderSprite->m_paSprite->m_spriteParts)) {

@@ -8,16 +8,12 @@
 	},
 	"id": "alphalaneous.fine_outline",
 	"name": "Fine Outline",
-	"version": "v1.1.3",
+	"version": "v1.1.4",
 	"developer": "Alphalaneous",
 	"description": "Change the black outline color of icons!",
-	"dependencies": [
-        {
-            "id": "geode.node-ids",
-            "version": ">=v1.15.0",
-            "importance": "required"
-        }
-    ],
+	"dependencies": {
+		"geode.node-ids": ">=v1.15.0"
+	},
 	"links": {
         "homepage": "https://linktr.ee/Alphalaneous",
         "source": "https://github.com/Alphalaneous/FineOutline",
