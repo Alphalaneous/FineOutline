@@ -1,3 +1,6 @@
+# 1.1.6
+- Code cleanup and compatibility fixes
+
 # 1.1.5
 - Fix a crash with More Icons
 

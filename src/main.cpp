@@ -170,7 +170,9 @@ class $modify(MySimplePlayer, SimplePlayer) {
     };
 
     void removeAllShaders() {
-        m_fields->m_isShaderSpr = false;
+        auto fields = m_fields.self();
+
+        fields->m_isShaderSpr = false;
         removeShaders(m_firstLayer);
 
         if (m_robotSprite && m_robotSprite->m_paSprite) {
@@ -216,8 +218,10 @@ class $modify(MySimplePlayer, SimplePlayer) {
     }
 
     void updatePlayerShaders(bool dual) {
-        m_fields->m_isShaderSpr = true;
-        m_fields->m_shaderSprDual = dual;
+        auto fields = m_fields.self();
+
+        fields->m_isShaderSpr = true;
+        fields->m_shaderSprDual = dual;
 
         std::string whichPlayer = dual ? "outline-color-p2" : "outline-color-p1";
 
@@ -245,9 +249,10 @@ class $modify(MySimplePlayer, SimplePlayer) {
 
     void updatePlayerFrame(int p0, IconType p1) {
         SimplePlayer::updatePlayerFrame(p0, p1);
+        auto fields = m_fields.self();
 
-        if (m_fields->m_isShaderSpr) {
-            updatePlayerShaders(m_fields->m_shaderSprDual);
+        if (fields->m_isShaderSpr) {
+            updatePlayerShaders(fields->m_shaderSprDual);
         }
     }
 };
@@ -411,6 +416,8 @@ class $modify(MyProfilePage, ProfilePage) {
     void getUserInfoFinished(GJUserScore* p0) {
         ProfilePage::getUserInfoFinished(p0);
 
+        auto fields = m_fields.self();
+
         if (m_ownProfile) {
             auto sdi = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
             auto dual = sdi && sdi->getSavedValue<bool>("2pselected");
@@ -427,13 +434,13 @@ class $modify(MyProfilePage, ProfilePage) {
             }
 
             if (auto twoPToggler = static_cast<CCMenuItemSpriteExtra*>(m_mainLayer->getChildByID("left-menu")->getChildByID("2p-toggler"))) {
-                m_fields->m_playerToggle = twoPToggler->m_pfnSelector;
+                fields->m_playerToggle = twoPToggler->m_pfnSelector;
                 twoPToggler->m_pfnSelector = menu_selector(MyProfilePage::on2PToggle);
             }
 
             if (Loader::get()->isModLoaded("weebify.separate_dual_icons") && !Loader::get()->isModLoaded("rynat.better_unlock_info")) {
                 if (auto shipToggler = static_cast<CCMenuItemSpriteExtra*>(playerMenu->getChildByID("player-ship"))) {
-                    m_fields->m_shipToggle = shipToggler->m_pfnSelector;
+                    fields->m_shipToggle = shipToggler->m_pfnSelector;
                     shipToggler->m_pfnSelector = menu_selector(MyProfilePage::onShipToggle);
                 }
             }
@@ -454,7 +461,9 @@ class $modify(MyProfilePage, ProfilePage) {
     }
 
     void on2PToggle(CCObject* sender) {
-        (this->*m_fields->m_playerToggle)(sender);
+        auto fields = m_fields.self();
+
+        (this->*fields->m_playerToggle)(sender);
 
         if (m_ownProfile) {
             auto sdi = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
@@ -474,7 +483,9 @@ class $modify(MyProfilePage, ProfilePage) {
     }
 
     void onShipToggle(CCObject* sender) {
-        (this->*m_fields->m_shipToggle)(sender);
+        auto fields = m_fields.self();
+
+        (this->*fields->m_shipToggle)(sender);
         if (m_ownProfile) {
             CCNode* playerMenu = m_mainLayer->getChildByID("player-menu");
             if (CCNode* shipNode = playerMenu->getChildByID("player-ship")) {
@@ -560,6 +571,7 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
         CCMenuItemToggler* m_customColorToggle;
         CCSprite* m_outlineSelector;
         CCLabelBMFont* m_customColorLabel;
+        bool m_disable = false;
         ~Fields() {
             delete m_outlineColorDelegate;
         }
@@ -585,16 +597,25 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
     }
 
     void setOutlineSelectorPos(int color) {
+        auto fields = m_fields.self();
+
         CCNode* btn = static_cast<CCNode*>(m_colorButtons->objectForKey(color))->getParent();
         CCPoint worldSpace = btn->convertToWorldSpace({0, 0});
         CCPoint nodeSpace = m_mainLayer->convertToNodeSpace(worldSpace);
-        m_fields->m_outlineSelector->setPosition(nodeSpace + btn->getScaledContentSize()/2);
+        fields->m_outlineSelector->setPosition(nodeSpace + btn->getScaledContentSize()/2);
     }
 
     bool init() {
         if (!CharacterColorPage::init()) return false;
+        
+        auto fields = m_fields.self();
 
-         m_fields->m_outlineColorDelegate = new OutlineColorPickPopupDelegate();
+        if (getID() == "rooot.custom-gamemode-colors/gamemode-colors=page") {
+            fields->m_disable = true;
+            return true;
+        }
+
+        fields->m_outlineColorDelegate = new OutlineColorPickPopupDelegate();
 
         auto sdi = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
         auto dual = sdi && sdi->getSavedValue<bool>("2pselected");
@@ -606,13 +627,13 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 
         int outlineColor = Mod::get()->getSavedValue<int64_t>(dual ? "outline-color-p2" : "outline-color-p1", 15);
 
-        m_fields->m_outlineSelector = CCSprite::createWithSpriteFrameName("GJ_select_001.png");
-        m_fields->m_outlineSelector->setColor({50, 50, 50});
-        m_fields->m_outlineSelector->setScale(0.7f);
-        m_fields->m_outlineSelector->setZOrder(1);
-        m_fields->m_outlineSelector->setID("cursor-line"_spr);
+        fields->m_outlineSelector = CCSprite::createWithSpriteFrameName("GJ_select_001.png");
+        fields->m_outlineSelector->setColor({50, 50, 50});
+        fields->m_outlineSelector->setScale(0.7f);
+        fields->m_outlineSelector->setZOrder(1);
+        fields->m_outlineSelector->setID("cursor-line"_spr);
 
-        m_mainLayer->addChild(m_fields->m_outlineSelector);
+        m_mainLayer->addChild(fields->m_outlineSelector);
         setOutlineSelectorPos(outlineColor);
 
         CCSprite* outlineColorSpr = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
@@ -637,21 +658,21 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 
         colorTabsMenu->setLayout(rowLayout);
 
-        m_fields->m_outlineColorBtn = CCMenuItemSpriteExtra::create(outlineColorSpr, this, menu_selector(MyCharacterColorPage::onOutlineColor));
-        m_fields->m_outlineColorBtn->setVisible(false);
-        m_fields->m_outlineColorBtn->setID("outline-color-button"_spr);
-        m_fields->m_outlineColorBtn->setColor(Mod::get()->getSavedValue<ccColor3B>(dual ? "p2-color" : "p1-color"));
+        fields->m_outlineColorBtn = CCMenuItemSpriteExtra::create(outlineColorSpr, this, menu_selector(MyCharacterColorPage::onOutlineColor));
+        fields->m_outlineColorBtn->setVisible(false);
+        fields->m_outlineColorBtn->setID("outline-color-button"_spr);
+        fields->m_outlineColorBtn->setColor(Mod::get()->getSavedValue<ccColor3B>(dual ? "p2-color" : "p1-color"));
 
-        m_fields->m_customColorToggle = CCMenuItemToggler::createWithStandardSprites(this, menu_selector(MyCharacterColorPage::onCustomColorToggle), 0.6f);
-        m_fields->m_customColorToggle->setID("custom-color-toggle"_spr);
-        m_fields->m_customColorToggle->setVisible(false);
-        m_fields->m_customColorToggle->setPosition(m_glowToggler->getPosition());
-        m_fields->m_customColorToggle->toggle(Mod::get()->getSavedValue<bool>("override-color"));
+        fields->m_customColorToggle = CCMenuItemToggler::createWithStandardSprites(this, menu_selector(MyCharacterColorPage::onCustomColorToggle), 0.6f);
+        fields->m_customColorToggle->setID("custom-color-toggle"_spr);
+        fields->m_customColorToggle->setVisible(false);
+        fields->m_customColorToggle->setPosition(m_glowToggler->getPosition());
+        fields->m_customColorToggle->toggle(Mod::get()->getSavedValue<bool>("override-color"));
 
         if (CCMenu* buttonsMenu = typeinfo_cast<CCMenu*>(m_mainLayer->getChildByID("buttons-menu"))) {
 
-            m_fields->m_outlineColorBtn->setPosition({m_glowToggler->getPosition().x + 73, m_glowToggler->getPosition().y});
-            buttonsMenu->addChild(m_fields->m_outlineColorBtn);
+            fields->m_outlineColorBtn->setPosition({m_glowToggler->getPosition().x + 73, m_glowToggler->getPosition().y});
+            buttonsMenu->addChild(fields->m_outlineColorBtn);
             if (CCMenuItemSpriteExtra* closeButton = typeinfo_cast<CCMenuItemSpriteExtra*>(buttonsMenu->getChildByID("close-button"))) {
                 closeButton->m_pfnSelector = menu_selector(MyCharacterColorPage::onCloseH);
             }
@@ -660,7 +681,7 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
             moveToMenu(colorTabsMenu, buttonsMenu, "col2-button");
             moveToMenu(colorTabsMenu, buttonsMenu, "glow-button");
 
-            buttonsMenu->addChild(m_fields->m_customColorToggle);
+            buttonsMenu->addChild(fields->m_customColorToggle);
         }
 
         ButtonSprite* greySpr = ButtonSprite::create("Line", 40, false, "bigFont.fnt", "GJ_button_04.png", 20, 0.4);
@@ -668,30 +689,30 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
         ButtonSprite* greenSpr = ButtonSprite::create("Line", 40, false, "bigFont.fnt", "GJ_button_01.png", 20, 0.4);
         greenSpr->setScale(0.85f);
 
-        m_fields->m_outlineTab = CCMenuItemToggler::create(greySpr, greenSpr, this, menu_selector(MyCharacterColorPage::onMode));
-        m_fields->m_outlineTab->setContentSize(greySpr->getContentSize());
-        m_fields->m_outlineTab->setTag(3);
-        m_fields->m_outlineTab->setID("outline-button"_spr);
-        colorTabsMenu->addChild(m_fields->m_outlineTab);
+        fields->m_outlineTab = CCMenuItemToggler::create(greySpr, greenSpr, this, menu_selector(MyCharacterColorPage::onMode));
+        fields->m_outlineTab->setContentSize(greySpr->getContentSize());
+        fields->m_outlineTab->setTag(3);
+        fields->m_outlineTab->setID("outline-button"_spr);
+        colorTabsMenu->addChild(fields->m_outlineTab);
         
         colorTabsMenu->updateLayout();
 
-        m_fields->m_customColorLabel = CCLabelBMFont::create("Custom", "bigFont.fnt");
-        m_fields->m_customColorLabel->setAnchorPoint({0, 0.5f});
-        m_fields->m_customColorLabel->setScale(0.3f);
-        m_fields->m_customColorLabel->setPosition(m_glowLabel->getPosition());
-        m_fields->m_customColorLabel->setVisible(false);
+        fields->m_customColorLabel = CCLabelBMFont::create("Custom", "bigFont.fnt");
+        fields->m_customColorLabel->setAnchorPoint({0, 0.5f});
+        fields->m_customColorLabel->setScale(0.3f);
+        fields->m_customColorLabel->setPosition(m_glowLabel->getPosition());
+        fields->m_customColorLabel->setVisible(false);
 
-        m_mainLayer->addChild(m_fields->m_customColorLabel);
+        m_mainLayer->addChild(fields->m_customColorLabel);
         
-        m_fields->m_outlineTab->toggle(false);
+        fields->m_outlineTab->toggle(false);
 
-        queueInMainThread([this] {
+        queueInMainThread([this, fields] {
             if (CCNode* parent = getParent()) {
                 if (parent->getID() != "GJGarageLayer") {
-                    m_fields->m_outlineTab->setVisible(false);
-                    m_fields->m_outlineTab->getParent()->updateLayout();
-                    m_fields->m_outlineSelector->setVisible(false);
+                    fields->m_outlineTab->setVisible(false);
+                    fields->m_outlineTab->getParent()->updateLayout();
+                    fields->m_outlineSelector->setVisible(false);
                 }
             }
         });
@@ -701,9 +722,10 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 
     void onCustomColorToggle(CCObject* sender) {
         bool toggled = !static_cast<CCMenuItemToggler*>(sender)->isToggled();
+        auto fields = m_fields.self();
         
         Mod::get()->setSavedValue<bool>("override-color", toggled);
-        m_fields->m_outlineColorBtn->setVisible(Mod::get()->getSavedValue<bool>("override-color"));
+        fields->m_outlineColorBtn->setVisible(Mod::get()->getSavedValue<bool>("override-color"));
 
         auto sdi = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
         auto dual = sdi && sdi->getSavedValue<bool>("2pselected");
@@ -717,11 +739,13 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
     }
 
     void onOutlineColor(CCObject* sender) {
+        auto fields = m_fields.self();
+
         auto sdi = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
         auto dual = sdi && sdi->getSavedValue<bool>("2pselected");
         geode::ColorPickPopup* colorPopup = geode::ColorPickPopup::create(Mod::get()->getSavedValue<ccColor3B>(dual ? "p2-color" : "p1-color"));
-        m_fields->m_outlineColorDelegate->init(m_playerObjects, m_fields->m_outlineColorBtn, dual);
-        colorPopup->setDelegate(m_fields->m_outlineColorDelegate);
+        fields->m_outlineColorDelegate->init(m_playerObjects, fields->m_outlineColorBtn, dual);
+        colorPopup->setDelegate(fields->m_outlineColorDelegate);
         colorPopup->show();
     }
 
@@ -755,29 +779,34 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 
     void onMode(CCObject* sender) {
         CharacterColorPage::onMode(sender);
+        auto fields = m_fields.self();
+        if (fields->m_disable) return;
 
         m_colorMode = sender->getTag();
-        m_fields->m_outlineColorBtn->setVisible(m_colorMode == 3 && Mod::get()->getSavedValue<bool>("override-color"));
-        m_fields->m_customColorToggle->setVisible(m_colorMode == 3);
-        m_fields->m_customColorLabel->setVisible(m_colorMode == 3);
+        fields->m_outlineColorBtn->setVisible(m_colorMode == 3 && Mod::get()->getSavedValue<bool>("override-color"));
+        fields->m_customColorToggle->setVisible(m_colorMode == 3);
+        fields->m_customColorLabel->setVisible(m_colorMode == 3);
 
         showLocksForTab(m_colorMode);
         
         if (m_colorMode != 3) {
-            m_fields->m_outlineSelector->setColor({50, 50, 50});
-            m_fields->m_outlineTab->toggle(false);
-            m_fields->m_outlineTab->setClickable(true);
-            m_fields->m_outlineSelector->setZOrder(1);
+            fields->m_outlineSelector->setColor({50, 50, 50});
+            fields->m_outlineTab->toggle(false);
+            fields->m_outlineTab->setClickable(true);
+            fields->m_outlineSelector->setZOrder(1);
         }
         else {
-            m_fields->m_outlineSelector->setColor({255, 255, 255});
-            m_fields->m_outlineTab->toggle(true);
-            m_fields->m_outlineTab->setClickable(false);
-            m_fields->m_outlineSelector->setZOrder(11);
+            fields->m_outlineSelector->setColor({255, 255, 255});
+            fields->m_outlineTab->toggle(true);
+            fields->m_outlineTab->setClickable(false);
+            fields->m_outlineSelector->setZOrder(11);
         }
     }
 
     void onPlayerColor(cocos2d::CCObject* sender) {
+        auto fields = m_fields.self();
+        if (fields->m_disable) return CharacterColorPage::onPlayerColor(sender);
+
         if (m_colorMode == 3) {
             auto sdi = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
             auto dual = sdi && sdi->getSavedValue<bool>("2pselected");
@@ -794,6 +823,8 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
 
     void toggleShip(CCObject* sender) {
         CharacterColorPage::toggleShip(sender);
+        auto fields = m_fields.self();
+        if (fields->m_disable) return;
         auto sdi = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
         auto dual = sdi && sdi->getSavedValue<bool>("2pselected");
         for (CCNode* children : CCArrayExt<CCNode*>(m_playerObjects)) {
@@ -807,6 +838,8 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
     }
 
     void setColorOnGarage() {
+        auto fields = m_fields.self();
+        if (fields->m_disable) return;
         CCScene* scene = CCDirector::get()->m_pRunningScene;
         if (GJGarageLayer* garage = scene->getChildByType<GJGarageLayer>(0)) {
             if (garage->m_playerObject) {
