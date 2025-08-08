@@ -1,3 +1,6 @@
+# 1.1.8
+- One more fix
+
 # 1.1.7
 - Fix typo
 

@@ -557,6 +557,8 @@ class OutlineColorPickPopupDelegate : public ColorPickPopupDelegate {
     }
 };
 
+class CustomCharacterColorPage : public CharacterColorPage {};
+
 class $modify(MyCharacterColorPage, CharacterColorPage) {
 
     static void onModify(auto& self) {
@@ -610,7 +612,7 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
         
         auto fields = m_fields.self();
 
-        if (getID() == "rooot.custom-gamemode-colors/gamemode-colors-page") {
+        if (typeinfo_cast<CustomCharacterColorPage*>(this)) {
             fields->m_disable = true;
             return true;
         }
