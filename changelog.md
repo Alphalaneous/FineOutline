@@ -1,3 +1,6 @@
+# 1.1.7
+- Fix typo
+
 # 1.1.6
 - Code cleanup and compatibility fixes
 

@@ -610,7 +610,7 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
         
         auto fields = m_fields.self();
 
-        if (getID() == "rooot.custom-gamemode-colors/gamemode-colors=page") {
+        if (getID() == "rooot.custom-gamemode-colors/gamemode-colors-page") {
             fields->m_disable = true;
             return true;
         }
