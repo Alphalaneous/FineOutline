@@ -5,7 +5,9 @@ using namespace geode::prelude;
 #define FORWARD_BASE(RET, METHOD, PARAMS, ARGS) \
     virtual RET METHOD PARAMS { return CCSpriteBatchNode::METHOD ARGS; }
 
-class DummyCCSpriteBatchNode : public CCSpriteBatchNode {
+namespace alpha::fine_outline {
+
+class BypassBatchNode : public CCSpriteBatchNode {
 
     FORWARD_BASE(CCTexture2D*, getTexture, (), ());
     FORWARD_BASE(void, setTexture, (CCTexture2D* p0), (p0));
@@ -32,3 +34,5 @@ class DummyCCSpriteBatchNode : public CCSpriteBatchNode {
     }
 
 };
+
+}

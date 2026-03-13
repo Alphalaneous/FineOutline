@@ -1,3 +1,8 @@
+# 1.2.0
+- Better isolation shaders
+  - No more thin outline still being visible
+- 2.2081 support
+
 # 1.1.8
 - One more fix
 
