@@ -24,13 +24,13 @@ void MyPlayerObject::setupOutlines() {
     alpha::fine_outline::addShaders(m_vehicleSprite);
     alpha::fine_outline::addShaders(m_birdVehicle);
 
-    if (m_robotSprite && m_robotSprite->m_paSprite) {
+    if (m_robotSprite && m_robotSprite->m_paSprite && m_robotSprite->m_paSprite->m_spriteParts) {
         for (auto part : m_robotSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
             fields->m_outlines[part] = alpha::fine_outline::createOutline(part);
             alpha::fine_outline::addShaders(part);
         }
     }
-    if (m_spiderSprite && m_spiderSprite->m_paSprite) {
+    if (m_spiderSprite && m_spiderSprite->m_paSprite && m_spiderSprite->m_paSprite->m_spriteParts) {
         for (auto part : m_spiderSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
             fields->m_outlines[part] = alpha::fine_outline::createOutline(part);
             alpha::fine_outline::addShaders(part);
