@@ -1,5 +1,6 @@
 #include "GJScoreCell.hpp"
 #include "SimplePlayer.hpp"
+#include "Utils.hpp"
 
 void MyGJScoreCell::loadFromScore(GJUserScore* p0) {
     GJScoreCell::loadFromScore(p0);
@@ -7,11 +8,7 @@ void MyGJScoreCell::loadFromScore(GJUserScore* p0) {
     if (p0->m_accountID != GJAccountManager::get()->m_accountID) return;
 
     if (auto player = typeinfo_cast<SimplePlayer*>(getChildByIDRecursive("player-icon"))) {
-        if (Mod::get()->getSavedValue<bool>("override-color")) {
-            static_cast<MySimplePlayer*>(player)->setOutlineColor(Mod::get()->getSavedValue<ccColor3B>("p1-color"), false);
-        }
-        else {
-            static_cast<MySimplePlayer*>(player)->setOutlineColor(GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>("outline-color-p1")), false);
-        }
+        auto p = static_cast<MySimplePlayer*>(player);
+        p->setOutlineColor(alpha::fine_outline::getP1Color());
     }
 }

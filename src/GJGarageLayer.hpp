@@ -11,6 +11,11 @@ class $modify(MyGJGarageLayer, GJGarageLayer) {
         (void)self.setHookPriority("GJGarageLayer::onSelect", -2);\
     }
 
+    struct Fields {
+        SEL_MenuHandler m_swapHandler;
+    };
+
     bool init();
     void onSelect(cocos2d::CCObject* sender);
+    void onSwap(cocos2d::CCObject* sender);
 };

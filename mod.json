@@ -8,7 +8,7 @@
 	},
 	"id": "alphalaneous.fine_outline",
 	"name": "Fine Outline",
-	"version": "v1.2.0",
+	"version": "v1.2.1",
 	"developer": "Alphalaneous",
 	"description": "Change the black outline color of icons!",
 	"dependencies": {
@@ -19,13 +19,5 @@
         "source": "https://github.com/Alphalaneous/FineOutline",
         "community": "https://discord.gg/Txn2CA5dHF"
     },
-	"tags": ["enhancement", "customization"],
-	"settings": {
-		"alternative-shader": {
-			"type": "bool",
-			"default": false,
-			"name": "Alternative Isolation Shader",
-			"description": "Use an alternative shader for the outline. This may work better on some icons, but can look bad on lighter outlines"
-		}
-	}
+	"tags": ["enhancement", "customization"]
 }

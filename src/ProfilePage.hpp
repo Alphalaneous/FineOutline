@@ -14,5 +14,6 @@ class $modify(MyProfilePage, ProfilePage) {
     void getUserInfoFinished(GJUserScore* p0);
     void toggleShip(CCObject* sender);
     void on2PToggle(CCObject* sender);
+    void setOutlineColor(bool p2);
     void onShipToggle(CCObject* sender);
 };

@@ -31,23 +31,6 @@ namespace alpha::fine_outline {
         return frag;
     }
 
-    inline std::string_view getIconFragAlt() {
-        static std::string frag = R"(
-            #ifdef GL_ES
-            precision mediump float;
-            #endif
-
-            varying vec4 v_fragmentColor;
-            varying vec2 v_texCoord;
-            uniform sampler2D CC_Texture0;
-
-            void main() {
-                gl_FragColor = texture2D(CC_Texture0, v_texCoord) * v_fragmentColor;
-            }
-        )";
-        return frag;
-    }
-
     inline std::string_view getOutlineFrag() {
         static std::string frag = R"(
             #ifdef GL_ES
@@ -73,31 +56,9 @@ namespace alpha::fine_outline {
         return frag;
     }
 
-    inline std::string_view getOutlineFragAlt() {
-        static std::string frag = R"(
-            #ifdef GL_ES
-            precision mediump float;
-            #endif
-
-            varying vec4 v_fragmentColor;
-            varying vec2 v_texCoord;
-            uniform sampler2D CC_Texture0;
-
-            void main() {
-                vec4 c = texture2D(CC_Texture0, v_texCoord);
-                float brightness = dot(c.rgb, vec3(1./3.)) / c.a;
-                float isOutline = smoothstep(0.9, 0.0, brightness);
-                c = vec4(c.a * isOutline);
-                gl_FragColor = c * v_fragmentColor;
-            }
-        )";
-        return frag;
-    }
-
     inline void loadShaders() {
-        bool alt = Mod::get()->getSettingValue<bool>("alternative-shader");
-        ShaderCache::get()->createShader("icon", alt ? getIconFragAlt() : getIconFrag());
-        ShaderCache::get()->createShader("outline", alt ? getOutlineFragAlt() : getOutlineFrag());
+        ShaderCache::get()->createShader("icon", getIconFrag());
+        ShaderCache::get()->createShader("outline", getOutlineFrag());
     }
 
     inline void removeShaders(CCSprite* spr) {
@@ -105,13 +66,18 @@ namespace alpha::fine_outline {
         spr->getShaderProgram()->setUniformsForBuiltins();
         spr->getShaderProgram()->use();
         spr->setCascadeOpacityEnabled(false);
-        spr->removeChildByID("black_outline"_spr);
+        if (!spr->m_pobTexture || !spr->m_pobTexture->hasPremultipliedAlpha()) {
+            spr->m_sBlendFunc.src = GL_SRC_ALPHA;
+            spr->m_sBlendFunc.dst = GL_ONE_MINUS_SRC_ALPHA;
+        }
+        else {
+            spr->m_sBlendFunc.src = CC_BLEND_SRC;
+            spr->m_sBlendFunc.dst = CC_BLEND_DST;
+        }
     }
 
-    inline void updateSprite(CCSprite* spr, const ccColor3B& color = {0, 0, 0}) {
-        if (!spr || color == ccColor3B{0, 0, 0}) return;
-
-        bool alt = Mod::get()->getSettingValue<bool>("alternative-shader");
+    inline CCSprite* createOutline(CCSprite* spr) {
+        if (!spr) return nullptr;
 
         spr->setCascadeOpacityEnabled(true);
 
@@ -120,25 +86,103 @@ namespace alpha::fine_outline {
         blackOutline->setContentSize(spr->getContentSize());
         blackOutline->setID("black_outline"_spr);
         blackOutline->setPosition(spr->getContentSize()/2);
-        blackOutline->setColor(color);
 
         if (auto prgOutline = ShaderCache::get()->getProgram("outline")) {
             prgOutline->setUniformsForBuiltins();
             blackOutline->setShaderProgram(prgOutline);
             prgOutline->use();
-            if (!alt)
-                blackOutline->setBlendFunc({GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA});
+            blackOutline->setBlendFunc({GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA});
         }
+
+        spr->addChild(blackOutline);
+
+        return blackOutline;
+    }
+
+    inline void addShaders(CCSprite* spr) {
+        if (!spr) return;
 
         if (auto progIcon = ShaderCache::get()->getProgram("icon")) {
             progIcon->setUniformsForBuiltins();
             spr->setShaderProgram(progIcon);
             progIcon->use();
-            if (!alt)
-                spr->setBlendFunc({GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA});
+            spr->setBlendFunc({GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA});
         }
+    }
 
-        spr->removeChildByID("black_outline"_spr);
-        spr->addChild(blackOutline);
+    inline Mod* getSeparateDualIcons() {
+        static auto sdi = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
+        return sdi;
+    }
+
+    inline bool isSDIDualIcon() {
+        auto sdi = getSeparateDualIcons();
+        if (!sdi) return false;
+
+        return sdi->getSavedValue<bool>("2pselected");
+    }
+
+    inline bool hasOverride() {
+        return Mod::get()->getSavedValue<bool>(isSDIDualIcon() ? "override-color-p2" : "override-color"); 
+    }
+
+    inline bool hasOverrideP1() {
+        return Mod::get()->getSavedValue<bool>("override-color"); 
+    }
+
+    inline bool hasOverrideP2() {
+        return Mod::get()->getSavedValue<bool>(getSeparateDualIcons() ? "override-color-p2" : "override-color"); 
+    }
+
+    inline void setOverride(bool override) {
+        Mod::get()->setSavedValue<bool>(isSDIDualIcon() ? "override-color-p2" : "override-color", override);
+    }
+
+    inline void setOverrideColor(const ccColor3B& color) {
+        Mod::get()->setSavedValue<ccColor3B>(isSDIDualIcon() ? "p2-color" : "p1-color", color);
+    }
+
+    inline ccColor3B getOverrideColor() {
+        return Mod::get()->getSavedValue<ccColor3B>(isSDIDualIcon() ? "p2-color" : "p1-color");
+    }
+
+    inline ccColor3B getOverrideColorP1() {
+        return Mod::get()->getSavedValue<ccColor3B>("p1-color");
+    }
+
+    inline ccColor3B getOverrideColorP2() {
+        return Mod::get()->getSavedValue<ccColor3B>(getSeparateDualIcons() ? "p2-color" : "p1-color");
+    }
+
+    inline int getRegularColor() {
+        return Mod::get()->getSavedValue<int>(isSDIDualIcon() ? "outline-color-p2" : "outline-color-p1");
+    }
+
+    inline int getRegularColorP1() {
+        return Mod::get()->getSavedValue<int>("outline-color-p1");
+    }
+
+    inline int getRegularColorP2() {
+        return Mod::get()->getSavedValue<int>(getSeparateDualIcons() ? "outline-color-p2" : "outline-color-p1");
+    }
+
+    inline void setRegularColor(unsigned int color) {
+        Mod::get()->setSavedValue<unsigned int>(isSDIDualIcon() ? "outline-color-p2" : "outline-color-p1", color);
+    }
+
+    inline ccColor3B getColor() {
+        return hasOverride() ? getOverrideColor() : GameManager::get()->colorForIdx(getRegularColor());
+    }
+
+    inline ccColor3B getP1Color() {
+        return hasOverrideP1() ? getOverrideColorP1() : GameManager::get()->colorForIdx(getRegularColorP1());
+    }
+
+    inline ccColor3B getP2Color() {
+        return hasOverrideP2() ? getOverrideColorP2() : GameManager::get()->colorForIdx(getRegularColorP2());
+    }
+
+    inline ccColor3B getColorFor(bool p2) {
+        return p2 ? getP2Color() : getP1Color();
     }
 }

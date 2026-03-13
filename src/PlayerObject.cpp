@@ -1,67 +1,104 @@
 #include "PlayerObject.hpp"
 #include "BypassBatchNode.hpp"
-#include "Geode/utils/cocos.hpp"
 #include "Utils.hpp"
 
-void MyPlayerObject::updatePlayerShaders() {
-    if (!m_gameLayer || !(m_gameLayer->m_player1 == this || m_gameLayer->m_player2 == this)) return;
+bool MyPlayerObject::init(int player, int ship, GJBaseGameLayer* gameLayer, cocos2d::CCLayer* layer, bool playLayer) {
+    if (!PlayerObject::init(player, ship, gameLayer, layer, playLayer)) return false;
+    setupOutlines();
+    return true;
+}
 
-    ccColor3B outlineColor;
-    if (Mod::get()->getSavedValue<bool>("override-color")) {
-        std::string whichPlayer = Loader::get()->isModLoaded("weebify.separate_dual_icons") && m_gameLayer->m_player2 == this ? "p2-color" : "p1-color";
-        outlineColor = Mod::get()->getSavedValue<ccColor3B>(whichPlayer);
-    }
-    else {
-        std::string whichPlayer = Loader::get()->isModLoaded("weebify.separate_dual_icons") && m_gameLayer->m_player2 == this ? "outline-color-p2" : "outline-color-p1";
-        outlineColor = GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>(whichPlayer, 15));
-    }
+void MyPlayerObject::setupOutlines() {
+    auto fields = m_fields.self();
 
-    alpha::fine_outline::updateSprite(m_iconSprite, outlineColor);
-    alpha::fine_outline::updateSprite(m_vehicleSprite, outlineColor);
-    alpha::fine_outline::updateSprite(m_birdVehicle, outlineColor);
+    for (auto [k, v] : fields->m_outlines) {
+        v->removeFromParent();
+    }
+    fields->m_outlines.clear();
+    
+    fields->m_outlines[m_iconSprite] = alpha::fine_outline::createOutline(m_iconSprite);
+    fields->m_outlines[m_vehicleSprite] = alpha::fine_outline::createOutline(m_vehicleSprite);
+    fields->m_outlines[m_birdVehicle] = alpha::fine_outline::createOutline(m_birdVehicle);
+
+    alpha::fine_outline::addShaders(m_iconSprite);
+    alpha::fine_outline::addShaders(m_vehicleSprite);
+    alpha::fine_outline::addShaders(m_birdVehicle);
+
     if (m_robotSprite && m_robotSprite->m_paSprite) {
         for (auto part : m_robotSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
-            alpha::fine_outline::updateSprite(part, outlineColor);
+            fields->m_outlines[part] = alpha::fine_outline::createOutline(part);
+            alpha::fine_outline::addShaders(part);
         }
     }
     if (m_spiderSprite && m_spiderSprite->m_paSprite) {
         for (auto part : m_spiderSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
-            alpha::fine_outline::updateSprite(part, outlineColor);
+            fields->m_outlines[part] = alpha::fine_outline::createOutline(part);
+            alpha::fine_outline::addShaders(part);
         }
     }
 }
 
-bool MyPlayerObject::init(int player, int ship, GJBaseGameLayer* gameLayer, CCLayer* layer, bool highGraphics) {
-    if (!PlayerObject::init(player, ship, gameLayer, layer, highGraphics)) return false;
-    runAction(CallFuncExt::create([this] {
-        updatePlayerShaders();
-    }));
-    return true;
+void MyPlayerObject::updateOutlineColors() {
+    auto fields = m_fields.self();
+    setupOutlines();
+
+    for (auto [k, v] : fields->m_outlines) {
+        if (fields->m_usingDefaultColor) {
+            alpha::fine_outline::removeShaders(k);
+        }
+        else if (fields->m_usesOutlineColor) {
+            alpha::fine_outline::addShaders(k);
+        }
+        v->setColor(fields->m_outlineColor);
+        v->setVisible(fields->m_usesOutlineColor && !fields->m_usingDefaultColor);
+    }
+}
+
+void MyPlayerObject::setOutlineColor(const ccColor3B& color) {
+    auto fields = m_fields.self();
+    fields->m_outlineColor = std::move(color);
+
+    fields->m_usingDefaultColor = color == ccColor3B{0, 0, 0};
+
+    updateOutlineColors();
+}
+
+void MyPlayerObject::enableOutlineColor(bool enable) {
+    auto fields = m_fields.self();
+    fields->m_usesOutlineColor = enable;
+
+    if (fields->m_usingDefaultColor) return;
+    
+    for (auto [k, v] : fields->m_outlines) {
+        if (enable) alpha::fine_outline::addShaders(k);
+        else alpha::fine_outline::removeShaders(k);
+        v->setVisible(enable);
+    }
 }
 
 void MyPlayerObject::updatePlayerFrame(int frame) {
     PlayerObject::updatePlayerFrame(frame);
-    updatePlayerShaders();
+    updateOutlineColors();
 }
 
 void MyPlayerObject::updatePlayerShipFrame(int frame) {
     PlayerObject::updatePlayerShipFrame(frame);
-    updatePlayerShaders();
+    updateOutlineColors();
 }
 
 void MyPlayerObject::updatePlayerRollFrame(int frame) {
     PlayerObject::updatePlayerRollFrame(frame);
-    updatePlayerShaders();
+    updateOutlineColors();
 }
 
 void MyPlayerObject::updatePlayerBirdFrame(int frame) {
     PlayerObject::updatePlayerBirdFrame(frame);
-    updatePlayerShaders();
+    updateOutlineColors();
 }
 
 void MyPlayerObject::updatePlayerDartFrame(int frame) {
     PlayerObject::updatePlayerDartFrame(frame);
-    updatePlayerShaders();
+    updateOutlineColors();
 }
 
 void* MyPlayerObject::getCustomVTablePtr() {
@@ -77,34 +114,24 @@ void MyPlayerObject::replaceBatchWithNode(CCSpriteBatchNode* batchNode) {
     *reinterpret_cast<void**>(batchNode) = getCustomVTablePtr();
 }
 
+void MyPlayerObject::updatePlayerSwingFrame(int frame) {
+    PlayerObject::updatePlayerSwingFrame(frame);
+    updateOutlineColors();
+}
+
+void MyPlayerObject::updatePlayerJetpackFrame(int frame) {
+    PlayerObject::updatePlayerJetpackFrame(frame);
+    updateOutlineColors();
+}
+
 void MyPlayerObject::createRobot(int frame) {
     PlayerObject::createRobot(frame);
     replaceBatchWithNode(m_robotBatchNode);
-
-    if (m_robotSprite && m_robotSprite->m_paSprite) {
-        for (auto part : m_robotSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
-            alpha::fine_outline::updateSprite(part);
-        }
-    }
+    updateOutlineColors();
 }
 
 void MyPlayerObject::createSpider(int frame) {
     PlayerObject::createSpider(frame);
     replaceBatchWithNode(m_spiderBatchNode);
-
-    if (m_spiderSprite && m_spiderSprite->m_paSprite) {
-        for (auto part : m_spiderSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
-            alpha::fine_outline::updateSprite(part);
-        }
-    }
-}
-
-void MyPlayerObject::updatePlayerSwingFrame(int frame) {
-    PlayerObject::updatePlayerSwingFrame(frame);
-    updatePlayerShaders();
-}
-
-void MyPlayerObject::updatePlayerJetpackFrame(int frame) {
-    PlayerObject::updatePlayerJetpackFrame(frame);
-    updatePlayerShaders();
+    updateOutlineColors();
 }

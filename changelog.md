@@ -1,3 +1,16 @@
+# 1.2.1
+- Code cleanup
+- Separate Dual Icons
+  - Allows for the potential for a future API
+  - No more needing to work around colors being set to the overlay sprite
+  - Easier to scale if more players exist in the future for any reason
+  - Bug fixes (It now works properly again!)
+  - Support Separate Dual Icons swap button
+  - Fix crash with profile 2P button after refreshing 
+- Fix Player 2 sometimes not having an outline color set
+- Remove Alt Shader, main one should work for all cases now
+- Fix choosing a black outline not properly updating the player
+
 # 1.2.0
 - Better isolation shaders
   - No more thin outline still being visible

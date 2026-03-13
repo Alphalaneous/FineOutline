@@ -7,32 +7,31 @@ using namespace geode::prelude;
 
 namespace alpha::fine_outline {
 
-class BypassBatchNode : public CCSpriteBatchNode {
+    class BypassBatchNode : public CCSpriteBatchNode {
 
-    FORWARD_BASE(CCTexture2D*, getTexture, (), ());
-    FORWARD_BASE(void, setTexture, (CCTexture2D* p0), (p0));
-    FORWARD_BASE(void, setBlendFunc, (ccBlendFunc p0), (p0));
-    FORWARD_BASE(ccBlendFunc, getBlendFunc, (), ());
+        FORWARD_BASE(CCTexture2D*, getTexture, (), ());
+        FORWARD_BASE(void, setTexture, (CCTexture2D* p0), (p0));
+        FORWARD_BASE(void, setBlendFunc, (ccBlendFunc p0), (p0));
+        FORWARD_BASE(ccBlendFunc, getBlendFunc, (), ());
 
-    virtual void visit(void) {
-        CCNode::visit();
-    }
+        virtual void visit(void) {
+            CCNode::visit();
+        }
 
-    FORWARD_BASE(void, addChild, (CCNode* p0), (p0));
-    FORWARD_BASE(void, addChild, (CCNode* p0, int p1), (p0, p1));
-    FORWARD_BASE(void, addChild, (CCNode* p0, int p1, int p2), (p0, p1, p2));
-    FORWARD_BASE(void, reorderChild, (CCNode* p0, int p1), (p0, p1));
-    FORWARD_BASE(void, removeChild, (CCNode* p0, bool p1), (p0, p1));
-    FORWARD_BASE(void, removeAllChildrenWithCleanup, (bool p1), (p1));
+        FORWARD_BASE(void, addChild, (CCNode* p0), (p0));
+        FORWARD_BASE(void, addChild, (CCNode* p0, int p1), (p0, p1));
+        FORWARD_BASE(void, addChild, (CCNode* p0, int p1, int p2), (p0, p1, p2));
+        FORWARD_BASE(void, reorderChild, (CCNode* p0, int p1), (p0, p1));
+        FORWARD_BASE(void, removeChild, (CCNode* p0, bool p1), (p0, p1));
+        FORWARD_BASE(void, removeAllChildrenWithCleanup, (bool p1), (p1));
 
-    virtual void sortAllChildren() {
-        CCNode::sortAllChildren();
-    }
+        virtual void sortAllChildren() {
+            CCNode::sortAllChildren();
+        }
 
-    virtual void draw() {
-        CCNode::draw();
-    }
+        virtual void draw() {
+            CCNode::draw();
+        }
 
-};
-
+    };
 }

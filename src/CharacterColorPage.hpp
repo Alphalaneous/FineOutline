@@ -23,7 +23,7 @@ class $modify(MyCharacterColorPage, CharacterColorPage) {
         bool m_disable = false;
     };
 
-    void updateColor(ccColor3B const& c, bool dual);
+    void updateColor(const ccColor3B& c);
     void moveToMenu(CCNode* menu, CCMenu* orig, std::string_view id);
     void setOutlineSelectorPos(int color);
     bool init();

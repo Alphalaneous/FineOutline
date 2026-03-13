@@ -1,90 +1,76 @@
 #include "SimplePlayer.hpp"
 #include "Utils.hpp"
-#include <Geode/binding/CCSpritePart.hpp>
 
-void MySimplePlayer::removeAllShaders() {
+bool MySimplePlayer::init(int id) {
+    if (!SimplePlayer::init(id)) return false;
+    setupOutlines();
+    return true;
+}
+
+void MySimplePlayer::setupOutlines() {
     auto fields = m_fields.self();
 
-    fields->m_isShaderSpr = false;
-    alpha::fine_outline::removeShaders(m_firstLayer);
+    for (auto [k, v] : fields->m_outlines) {
+        v->removeFromParent();
+    }
+    fields->m_outlines.clear();
+
+    fields->m_outlines[m_firstLayer] = alpha::fine_outline::createOutline(m_firstLayer);
+    alpha::fine_outline::addShaders(m_firstLayer);
 
     if (m_robotSprite && m_robotSprite->m_paSprite) {
         for (auto part : m_robotSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
-            alpha::fine_outline::removeShaders(part);
+            fields->m_outlines[part] = alpha::fine_outline::createOutline(part);
+            alpha::fine_outline::addShaders(part);
         }
     }
     if (m_spiderSprite && m_spiderSprite->m_paSprite) {
         for (auto part : m_spiderSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
-            alpha::fine_outline::removeShaders(part);
+            fields->m_outlines[part] = alpha::fine_outline::createOutline(part);
+            alpha::fine_outline::addShaders(part);
         }
     }
 }
 
-void MySimplePlayer::setOutlineColor(const ccColor3B& color, bool dual) {
+void MySimplePlayer::setOutlineColor(const ccColor3B& color) {
+    auto fields = m_fields.self();
+    fields->m_outlineColor = std::move(color);
 
-    if (color == ccColor3B{0, 0, 0}) {
-        removeAllShaders();
-        return;
-    }
+    fields->m_usingDefaultColor = color == ccColor3B{0, 0, 0};
 
-    if (auto blackOutline = typeinfo_cast<CCSprite*>(m_firstLayer->getChildByID("black_outline"_spr))) {
-        blackOutline->setColor(color);
-    }
-    else {
-        updatePlayerShaders(dual);
-    }
+    updateOutlineColors();
+}
 
-    if (m_robotSprite && m_robotSprite->m_paSprite) {
-        for (auto part : m_robotSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
-            if (auto blackOutline = typeinfo_cast<CCSprite*>(part->getChildByID("black_outline"_spr))) {
-                blackOutline->setColor(color);
-            }
-        }
-    }
-    if (m_spiderSprite && m_spiderSprite->m_paSprite) {
-        for (auto part : m_spiderSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
-            if (auto blackOutline = typeinfo_cast<CCSprite*>(part->getChildByID("black_outline"_spr))) {
-                blackOutline->setColor(color);
-            }
-        }
+void MySimplePlayer::enableOutlineColor(bool enable) {
+    auto fields = m_fields.self();
+    fields->m_usesOutlineColor = enable;
+
+    if (fields->m_usingDefaultColor) return;
+
+    for (auto [k, v] : fields->m_outlines) {
+        if (enable) alpha::fine_outline::addShaders(k);
+        else alpha::fine_outline::removeShaders(k);
+        v->setVisible(enable);
     }
 }
 
-void MySimplePlayer::updatePlayerShaders(bool dual) {
+void MySimplePlayer::updateOutlineColors() {
     auto fields = m_fields.self();
+    setupOutlines();
 
-    fields->m_isShaderSpr = true;
-    fields->m_shaderSprDual = dual;
-
-    std::string whichPlayer = dual ? "outline-color-p2" : "outline-color-p1";
-
-    ccColor3B outlineColor;
-    if (Mod::get()->getSavedValue<bool>("override-color")) {
-        outlineColor = Mod::get()->getSavedValue<ccColor3B>(dual ? "p2-color" : "p1-color");
-    }
-    else {
-        outlineColor = GameManager::get()->colorForIdx(Mod::get()->getSavedValue<int64_t>(whichPlayer, 15));
-    }
-
-    if (m_robotSprite && m_robotSprite->m_paSprite) {
-        for (auto part : m_robotSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
-            alpha::fine_outline::updateSprite(part, outlineColor);
+    for (auto [k, v] : fields->m_outlines) {
+        if (fields->m_usingDefaultColor) {
+            alpha::fine_outline::removeShaders(k);
         }
-    }
-    if (m_spiderSprite && m_spiderSprite->m_paSprite) {
-        for (auto part : m_spiderSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
-            alpha::fine_outline::updateSprite(part, outlineColor);
+        else if (fields->m_usesOutlineColor) {
+            alpha::fine_outline::addShaders(k);
         }
+        v->setColor(fields->m_outlineColor);
+        v->setVisible(fields->m_usesOutlineColor && !fields->m_usingDefaultColor);
     }
-    alpha::fine_outline::updateSprite(m_firstLayer, outlineColor);
-    
 }
 
 void MySimplePlayer::updatePlayerFrame(int p0, IconType p1) {
     SimplePlayer::updatePlayerFrame(p0, p1);
-    auto fields = m_fields.self();
-
-    if (fields->m_isShaderSpr) {
-        updatePlayerShaders(fields->m_shaderSprDual);
-    }
+    updateOutlineColors();
 }

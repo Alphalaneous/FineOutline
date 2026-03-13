@@ -7,13 +7,16 @@ using namespace geode::prelude;
 
 class $modify(MySimplePlayer, SimplePlayer) {
     struct Fields {
-        bool m_isGlobedSelf = false;
-        bool m_isShaderSpr = false;
-        bool m_shaderSprDual = false;
+        ccColor3B m_outlineColor;
+        bool m_usesOutlineColor = true;
+        bool m_usingDefaultColor = false;
+        std::unordered_map<CCSprite*, Ref<CCSprite>> m_outlines;
     };
 
-    void removeAllShaders();
-    void setOutlineColor(const ccColor3B& color, bool dual);
-    void updatePlayerShaders(bool dual);
+    bool init(int id);
+    void setupOutlines();
+    void enableOutlineColor(bool enable);
+    void setOutlineColor(const ccColor3B& color);
+    void updateOutlineColors();
     void updatePlayerFrame(int p0, IconType p1);
 };
