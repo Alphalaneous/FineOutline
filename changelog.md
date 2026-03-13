@@ -1,3 +1,6 @@
+# 1.2.2
+- Fix a crash
+
 # 1.2.1
 - Code cleanup
 - Separate Dual Icons

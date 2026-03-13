@@ -50,7 +50,7 @@ void MySimplePlayer::enableOutlineColor(bool enable) {
     for (auto [k, v] : fields->m_outlines) {
         if (enable) alpha::fine_outline::addShaders(k);
         else alpha::fine_outline::removeShaders(k);
-        v->setVisible(enable);
+        if (v) v->setVisible(enable);
     }
 }
 
@@ -65,8 +65,10 @@ void MySimplePlayer::updateOutlineColors() {
         else if (fields->m_usesOutlineColor) {
             alpha::fine_outline::addShaders(k);
         }
-        v->setColor(fields->m_outlineColor);
-        v->setVisible(fields->m_usesOutlineColor && !fields->m_usingDefaultColor);
+        if (v) {
+            v->setColor(fields->m_outlineColor);
+            v->setVisible(fields->m_usesOutlineColor && !fields->m_usingDefaultColor);
+        }
     }
 }
 

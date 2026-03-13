@@ -62,6 +62,7 @@ namespace alpha::fine_outline {
     }
 
     inline void removeShaders(CCSprite* spr) {
+        if (!spr) return;
         spr->setShaderProgram(CCShaderCache::sharedShaderCache()->programForKey(kCCShader_PositionTextureColor));
         spr->getShaderProgram()->setUniformsForBuiltins();
         spr->getShaderProgram()->use();
