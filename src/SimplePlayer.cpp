@@ -11,7 +11,7 @@ void MySimplePlayer::setupOutlines() {
     auto fields = m_fields.self();
 
     for (auto [k, v] : fields->m_outlines) {
-        v->removeFromParent();
+        if (v) v->removeFromParent();
     }
     fields->m_outlines.clear();
 
