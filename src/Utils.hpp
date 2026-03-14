@@ -23,7 +23,7 @@ namespace alpha::fine_outline {
                 float gr = float(abs(c.r - c.g) < 0.25 && abs(c.g - c.b) < 0.25);
 
                 float condition = float(br < 1.0 && c.a > 0.0 && gr > 0.0);
-                float fade = smoothstep(0.0, 0.25, br); // adjust 0.25 for AA width
+                float fade = smoothstep(0.0, 0.25, br);
                 c.a = mix(c.a, c.a * fade, condition);
                 gl_FragColor = v_fragmentColor * c;
             }
@@ -31,6 +31,7 @@ namespace alpha::fine_outline {
         return frag;
     }
 
+    // based off of mats implementation, slightly tweaked
     inline std::string_view getOutlineFrag() {
         static std::string frag = R"(
             #ifdef GL_ES
@@ -43,14 +44,12 @@ namespace alpha::fine_outline {
 
             void main() {
                 vec4 c = texture2D(CC_Texture0, v_texCoord);
-                float br = max(max(c.r, c.g), c.b);
-                float gr = float(abs(c.r - c.g) < 0.25 && abs(c.g - c.b) < 0.25);
 
-                float condition = float(br < 1.0 && c.a > 0.0 && gr > 0.0);
-                c.a = mix(0.0, c.a * (1.0 - br), condition);
-                c.rgb = mix(c.rgb, vec3(1.0), condition);
+                float brightness = dot(c.rgb, vec3(1./3.)) / c.a;
+                float isOutline = smoothstep(0.75, 0.0, brightness);
 
-                gl_FragColor = v_fragmentColor * c;
+                c = vec4(c.a * isOutline);
+                gl_FragColor = c * v_fragmentColor;
             }
         )";
         return frag;
@@ -92,7 +91,6 @@ namespace alpha::fine_outline {
             prgOutline->setUniformsForBuiltins();
             blackOutline->setShaderProgram(prgOutline);
             prgOutline->use();
-            blackOutline->setBlendFunc({GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA});
         }
 
         spr->removeChildByID("black_outline"_spr);
@@ -108,7 +106,6 @@ namespace alpha::fine_outline {
             progIcon->setUniformsForBuiltins();
             spr->setShaderProgram(progIcon);
             progIcon->use();
-            spr->setBlendFunc({GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA});
         }
     }
 

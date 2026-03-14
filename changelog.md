@@ -1,3 +1,6 @@
+# 1.2.5
+- More shader tweaks
+
 # 1.2.4
 - Fix UFO dome being colored
   - Add a setting for it cuz it looks cool
