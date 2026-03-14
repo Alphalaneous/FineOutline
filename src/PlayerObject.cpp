@@ -11,9 +11,6 @@ bool MyPlayerObject::init(int player, int ship, GJBaseGameLayer* gameLayer, coco
 void MyPlayerObject::setupOutlines() {
     auto fields = m_fields.self();
 
-    for (auto [k, v] : fields->m_outlines) {
-        if (v) v->removeFromParent();
-    }
     fields->m_outlines.clear();
     
     fields->m_outlines[m_iconSprite] = alpha::fine_outline::createOutline(m_iconSprite);

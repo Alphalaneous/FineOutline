@@ -10,9 +10,6 @@ bool MySimplePlayer::init(int id) {
 void MySimplePlayer::setupOutlines() {
     auto fields = m_fields.self();
 
-    for (auto [k, v] : fields->m_outlines) {
-        if (v) v->removeFromParent();
-    }
     fields->m_outlines.clear();
 
     fields->m_outlines[m_firstLayer] = alpha::fine_outline::createOutline(m_firstLayer);

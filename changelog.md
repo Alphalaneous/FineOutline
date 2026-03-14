@@ -1,3 +1,7 @@
+# 1.2.3
+- RobTop's GJRobotSprite and GJSpiderSprite are cursed
+   - Fixed a crash (I hope)
+
 # 1.2.2
 - Fix a crash
 

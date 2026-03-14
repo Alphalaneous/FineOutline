@@ -95,6 +95,7 @@ namespace alpha::fine_outline {
             blackOutline->setBlendFunc({GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA});
         }
 
+        spr->removeChildByID("black_outline"_spr);
         spr->addChild(blackOutline);
 
         return blackOutline;
