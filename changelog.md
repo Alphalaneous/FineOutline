@@ -1,6 +1,10 @@
+# 1.2.4
+- Fix UFO dome being colored
+  - Add a setting for it cuz it looks cool
+
 # 1.2.3
 - RobTop's GJRobotSprite and GJSpiderSprite are cursed
-   - Fixed a crash (I hope)
+  - Fixed a crash (I hope)
 
 # 1.2.2
 - Fix a crash

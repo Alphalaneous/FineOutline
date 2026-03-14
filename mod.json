@@ -8,7 +8,7 @@
 	},
 	"id": "alphalaneous.fine_outline",
 	"name": "Fine Outline",
-	"version": "v1.2.3",
+	"version": "v1.2.4",
 	"developer": "Alphalaneous",
 	"description": "Change the black outline color of icons!",
 	"dependencies": {
@@ -19,5 +19,13 @@
         "source": "https://github.com/Alphalaneous/FineOutline",
         "community": "https://discord.gg/Txn2CA5dHF"
     },
-	"tags": ["enhancement", "customization"]
+	"tags": ["enhancement", "customization"],
+	"settings": {
+		"tint-ufo-dome": {
+			"type": "bool",
+			"default": false,
+			"name": "Tint UFO Dome",
+			"description": "Tint the dome of the UFO to match the outline color"
+		}
+	}
 }

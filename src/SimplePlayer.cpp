@@ -15,6 +15,11 @@ void MySimplePlayer::setupOutlines() {
     fields->m_outlines[m_firstLayer] = alpha::fine_outline::createOutline(m_firstLayer);
     alpha::fine_outline::addShaders(m_firstLayer);
 
+    if (Mod::get()->getSettingValue<bool>("tint-ufo-dome")) {
+        fields->m_outlines[m_birdDome] = alpha::fine_outline::createOutline(m_birdDome);
+        alpha::fine_outline::addShaders(m_birdDome);
+    }
+
     if (m_robotSprite && m_robotSprite->m_paSprite && m_robotSprite->m_paSprite->m_spriteParts) {
         for (auto part : m_robotSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
             fields->m_outlines[part] = alpha::fine_outline::createOutline(part);
