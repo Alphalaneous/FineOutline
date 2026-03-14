@@ -19,11 +19,6 @@ void MyPlayerObject::setupOutlines() {
     alpha::fine_outline::addShaders(m_iconSprite);
     alpha::fine_outline::addShaders(m_vehicleSprite);
 
-    if (Mod::get()->getSettingValue<bool>("tint-ufo-dome")) {
-        fields->m_outlines[m_birdVehicle] = alpha::fine_outline::createOutline(m_birdVehicle);
-        alpha::fine_outline::addShaders(m_birdVehicle);
-    }
-
     if (m_robotSprite && m_robotSprite->m_paSprite && m_robotSprite->m_paSprite->m_spriteParts) {
         for (auto part : m_robotSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
             fields->m_outlines[part] = alpha::fine_outline::createOutline(part);

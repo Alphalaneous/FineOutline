@@ -19,13 +19,5 @@
         "source": "https://github.com/Alphalaneous/FineOutline",
         "community": "https://discord.gg/Txn2CA5dHF"
     },
-	"tags": ["enhancement", "customization"],
-	"settings": {
-		"tint-ufo-dome": {
-			"type": "bool",
-			"default": false,
-			"name": "Tint UFO Dome",
-			"description": "Tint the dome of the UFO to match the outline color"
-		}
-	}
+	"tags": ["enhancement", "customization"]
 }

@@ -1,5 +1,6 @@
 # 1.2.5
 - More shader tweaks
+  - Removed UFO dome coloring setting due to internal changes
 
 # 1.2.4
 - Fix UFO dome being colored
