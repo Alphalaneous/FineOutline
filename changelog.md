@@ -1,3 +1,8 @@
+# 1.3.1
+- Tweaked shaders even more
+  - Less washed out
+  - Less gaps
+
 # 1.3.0
 - Added Optional API
 - Tweaked shaders some more

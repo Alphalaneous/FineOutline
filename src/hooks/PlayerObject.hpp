@@ -22,7 +22,7 @@ class $modify(MyPlayerObject, PlayerObject) {
         ccColor3B m_outlineColor;
         bool m_usesOutlineColor = true;
         bool m_usingDefaultColor = false;
-        std::unordered_map<CCSprite*, Ref<CCSprite>> m_outlines;
+        std::unordered_map<CCSprite*, CCSprite*> m_outlines;
     };
 
     bool init(int player, int ship, GJBaseGameLayer* gameLayer, cocos2d::CCLayer* layer, bool playLayer);

@@ -179,11 +179,21 @@ namespace alpha::fine_outline {
                     vec4 c = texture2D(CC_Texture0, v_texCoord);
 
                     float brightness = dot(c.rgb, vec3(1./3.)) / max(c.a, 0.001);
-                    float isOutline = smoothstep(0.5, 0.0, brightness);
 
-                    c.a = c.a * (1.0 - isOutline);
+                    float outlineMask = smoothstep(1.0, 0.0, brightness);
 
-                    gl_FragColor = c * v_fragmentColor;
+                    float shadowMask = smoothstep(0.5, 0.0, brightness) * (1.0 - outlineMask);
+
+                    vec3 shadowDarkened = mix(c.rgb, c.rgb * 0.1, shadowMask);
+
+                    vec3 finalRGB = mix(shadowDarkened, vec3(1.0), outlineMask);
+
+                    float isOutline = smoothstep(0.3, 0.0, brightness);
+                    float finalA = c.a * (1.0 - isOutline);
+
+                    finalRGB *= finalA;
+
+                    gl_FragColor = vec4(finalRGB, finalA) * v_fragmentColor;
                 }
             )";
             return frag;
@@ -206,8 +216,21 @@ namespace alpha::fine_outline {
                     float brightness = dot(c.rgb, vec3(1./3.)) / max(c.a, 0.001);
                     float isOutline = smoothstep(0.75, 0.0, brightness);
 
-                    c = vec4(c.a * isOutline);
-                    gl_FragColor = c * v_fragmentColor;
+                    float offset = 0.003;
+                    vec2 offsets[4];
+                    offsets[0] = vec2(-offset, 0.0);
+                    offsets[1] = vec2(offset, 0.0);
+                    offsets[2] = vec2(0.0, -offset);
+                    offsets[3] = vec2(0.0, offset);
+
+                    for (int i = 0; i < 4; ++i) {
+                        vec4 n = texture2D(CC_Texture0, v_texCoord + offsets[i]);
+                        float b = dot(n.rgb, vec3(1./3.)) / max(n.a, 0.001);
+                        isOutline = max(isOutline, smoothstep(0.75, 0.0, b));
+                    }
+
+                    gl_FragColor = vec4(c.a * isOutline);
+                    gl_FragColor *= v_fragmentColor;
                 }
             )";
             return frag;

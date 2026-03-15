@@ -115,12 +115,14 @@ void MyPlayerObject::updatePlayerJetpackFrame(int frame) {
 
 void MyPlayerObject::createRobot(int frame) {
     PlayerObject::createRobot(frame);
+
     alpha::fine_outline::utils::replaceVTable<alpha::fine_outline::BypassBatchNode>(m_robotBatchNode);
     updateOutlineColors();
 }
 
 void MyPlayerObject::createSpider(int frame) {
     PlayerObject::createSpider(frame);
+
     alpha::fine_outline::utils::replaceVTable<alpha::fine_outline::BypassBatchNode>(m_spiderBatchNode);
     updateOutlineColors();
 }
