@@ -12,7 +12,6 @@ public:
     void createShader(std::string_view name, std::string_view frag);
     void clearShaders();
 
-    static std::string getVertex();
     static ShaderCache* get();
 
 protected:

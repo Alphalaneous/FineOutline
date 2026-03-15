@@ -1,5 +1,5 @@
 #include "SimplePlayer.hpp"
-#include "Utils.hpp"
+#include "../FineOutline.hpp"
 
 bool MySimplePlayer::init(int id) {
     if (!SimplePlayer::init(id)) return false;
@@ -12,19 +12,19 @@ void MySimplePlayer::setupOutlines() {
 
     fields->m_outlines.clear();
 
-    fields->m_outlines[m_firstLayer] = alpha::fine_outline::createOutline(m_firstLayer);
-    alpha::fine_outline::addShaders(m_firstLayer);
+    fields->m_outlines[m_firstLayer] = alpha::fine_outline::shaders::createOutline(m_firstLayer);
+    alpha::fine_outline::shaders::addShaders(m_firstLayer);
 
     if (m_robotSprite && m_robotSprite->m_paSprite && m_robotSprite->m_paSprite->m_spriteParts) {
         for (auto part : m_robotSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
-            fields->m_outlines[part] = alpha::fine_outline::createOutline(part);
-            alpha::fine_outline::addShaders(part);
+            fields->m_outlines[part] = alpha::fine_outline::shaders::createOutline(part);
+            alpha::fine_outline::shaders::addShaders(part);
         }
     }
     if (m_spiderSprite && m_spiderSprite->m_paSprite && m_spiderSprite->m_paSprite->m_spriteParts) {
         for (auto part : m_spiderSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
-            fields->m_outlines[part] = alpha::fine_outline::createOutline(part);
-            alpha::fine_outline::addShaders(part);
+            fields->m_outlines[part] = alpha::fine_outline::shaders::createOutline(part);
+            alpha::fine_outline::shaders::addShaders(part);
         }
     }
 }
@@ -50,8 +50,8 @@ void MySimplePlayer::enableOutlineColor(bool enable) {
     if (fields->m_usingDefaultColor) return;
 
     for (auto [k, v] : fields->m_outlines) {
-        if (enable) alpha::fine_outline::addShaders(k);
-        else alpha::fine_outline::removeShaders(k);
+        if (enable) alpha::fine_outline::shaders::addShaders(k);
+        else alpha::fine_outline::shaders::removeShaders(k);
         if (v) v->setVisible(enable);
     }
 }
@@ -62,10 +62,10 @@ void MySimplePlayer::updateOutlineColors() {
 
     for (auto [k, v] : fields->m_outlines) {
         if (fields->m_usingDefaultColor) {
-            alpha::fine_outline::removeShaders(k);
+            alpha::fine_outline::shaders::removeShaders(k);
         }
         else if (fields->m_usesOutlineColor) {
-            alpha::fine_outline::addShaders(k);
+            alpha::fine_outline::shaders::addShaders(k);
         }
         if (v) {
             v->setColor(fields->m_outlineColor);

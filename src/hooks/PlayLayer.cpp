@@ -1,5 +1,5 @@
 #include "PlayLayer.hpp"
-#include "../include/FineOutline.hpp"
+#include "../FineOutline.hpp"
 
 bool MyPlayLayer::init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
     if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
@@ -19,7 +19,7 @@ void MyPlayLayer::checkGlobed(float dt) {
     if (!globedSimplePlayer) return;
     
     if (auto player = globedSimplePlayer->getChildByType<SimplePlayer>(0)) {
-        alpha::fine_outline::setOutlineColorS(player, alpha::fine_outline::getColor(alpha::fine_outline::PlayerIcon::ONE));
+        alpha::fine_outline::impl::setOutlineColor(player, alpha::fine_outline::impl::getColor(alpha::fine_outline::PlayerIcon::ONE));
         unschedule(schedule_selector(MyPlayLayer::checkGlobed));
     }
 }

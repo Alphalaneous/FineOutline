@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ccTypes.h"
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PlayerObject.hpp>
 
@@ -45,7 +44,4 @@ class $modify(MyPlayerObject, PlayerObject) {
 
     void createRobot(int frame);
     void createSpider(int frame);
-
-    void* getCustomVTablePtr();
-    void replaceBatchWithNode(CCSpriteBatchNode* batchNode);
 };

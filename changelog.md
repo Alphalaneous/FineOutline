@@ -1,3 +1,8 @@
+# 1.3.0
+- Added Optional API
+- Tweaked shaders some more
+- Code cleanup
+
 # 1.2.5
 - More shader tweaks
   - Removed UFO dome coloring setting due to internal changes

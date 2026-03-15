@@ -32,6 +32,5 @@ namespace alpha::fine_outline {
         virtual void draw() {
             CCNode::draw();
         }
-
     };
 }
