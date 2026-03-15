@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ccTypes.h"
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PlayerObject.hpp>
 
@@ -29,9 +30,10 @@ class $modify(MyPlayerObject, PlayerObject) {
 
     void setupOutlines();
     void updateOutlineColors();
+    void enableOutlineColor(bool enable);
     
     void setOutlineColor(const ccColor3B& color);
-    void enableOutlineColor(bool enable);
+    ccColor3B getOutlineColor();
 
     void updatePlayerFrame(int frame);
     void updatePlayerShipFrame(int frame);

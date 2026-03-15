@@ -1,6 +1,5 @@
 #include "PlayLayer.hpp"
-#include "SimplePlayer.hpp"
-#include "Utils.hpp"
+#include "../include/FineOutline.hpp"
 
 bool MyPlayLayer::init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
     if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
@@ -10,14 +9,17 @@ bool MyPlayLayer::init(GJGameLevel* level, bool useReplay, bool dontCreateObject
 }
 
 void MyPlayLayer::checkGlobed(float dt) {
-    if (auto wrapper = m_progressBar->getChildByID("dankmeme.globed2/progress-bar-wrapper")) {
-        if (auto progressIcon = wrapper->getChildByID("dankmeme.globed2/self-player-progress")) {
-            if (auto globedSimplePlayer = progressIcon->getChildByType<GlobedSimplePlayer>(0)) {
-                if (auto player = globedSimplePlayer->getChildByType<SimplePlayer>(0)) {
-                    static_cast<MySimplePlayer*>(player)->setOutlineColor(alpha::fine_outline::getP1Color());
-                    unschedule(schedule_selector(MyPlayLayer::checkGlobed));
-                }
-            }
-        }
+    auto wrapper = m_progressBar->getChildByID("dankmeme.globed2/progress-bar-wrapper");
+    if (!wrapper) return;
+
+    auto progressIcon = wrapper->getChildByID("dankmeme.globed2/self-player-progress");
+    if (!progressIcon) return;
+
+    auto globedSimplePlayer = progressIcon->getChildByType<GlobedSimplePlayer>(0);
+    if (!globedSimplePlayer) return;
+    
+    if (auto player = globedSimplePlayer->getChildByType<SimplePlayer>(0)) {
+        alpha::fine_outline::setOutlineColorS(player, alpha::fine_outline::getColor(alpha::fine_outline::PlayerIcon::ONE));
+        unschedule(schedule_selector(MyPlayLayer::checkGlobed));
     }
 }

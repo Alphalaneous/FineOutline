@@ -66,14 +66,6 @@ namespace alpha::fine_outline {
         spr->getShaderProgram()->setUniformsForBuiltins();
         spr->getShaderProgram()->use();
         spr->setCascadeOpacityEnabled(false);
-        if (!spr->m_pobTexture || !spr->m_pobTexture->hasPremultipliedAlpha()) {
-            spr->m_sBlendFunc.src = GL_SRC_ALPHA;
-            spr->m_sBlendFunc.dst = GL_ONE_MINUS_SRC_ALPHA;
-        }
-        else {
-            spr->m_sBlendFunc.src = CC_BLEND_SRC;
-            spr->m_sBlendFunc.dst = CC_BLEND_DST;
-        }
     }
 
     inline CCSprite* createOutline(CCSprite* spr) {
@@ -107,81 +99,5 @@ namespace alpha::fine_outline {
             spr->setShaderProgram(progIcon);
             progIcon->use();
         }
-    }
-
-    inline Mod* getSeparateDualIcons() {
-        static auto sdi = Loader::get()->getLoadedMod("weebify.separate_dual_icons");
-        return sdi;
-    }
-
-    inline bool isSDIDualIcon() {
-        auto sdi = getSeparateDualIcons();
-        if (!sdi) return false;
-
-        return sdi->getSavedValue<bool>("2pselected");
-    }
-
-    inline bool hasOverride() {
-        return Mod::get()->getSavedValue<bool>(isSDIDualIcon() ? "override-color-p2" : "override-color"); 
-    }
-
-    inline bool hasOverrideP1() {
-        return Mod::get()->getSavedValue<bool>("override-color"); 
-    }
-
-    inline bool hasOverrideP2() {
-        return Mod::get()->getSavedValue<bool>(getSeparateDualIcons() ? "override-color-p2" : "override-color"); 
-    }
-
-    inline void setOverride(bool override) {
-        Mod::get()->setSavedValue<bool>(isSDIDualIcon() ? "override-color-p2" : "override-color", override);
-    }
-
-    inline void setOverrideColor(const ccColor3B& color) {
-        Mod::get()->setSavedValue<ccColor3B>(isSDIDualIcon() ? "p2-color" : "p1-color", color);
-    }
-
-    inline ccColor3B getOverrideColor() {
-        return Mod::get()->getSavedValue<ccColor3B>(isSDIDualIcon() ? "p2-color" : "p1-color");
-    }
-
-    inline ccColor3B getOverrideColorP1() {
-        return Mod::get()->getSavedValue<ccColor3B>("p1-color");
-    }
-
-    inline ccColor3B getOverrideColorP2() {
-        return Mod::get()->getSavedValue<ccColor3B>(getSeparateDualIcons() ? "p2-color" : "p1-color");
-    }
-
-    inline int getRegularColor() {
-        return Mod::get()->getSavedValue<int>(isSDIDualIcon() ? "outline-color-p2" : "outline-color-p1");
-    }
-
-    inline int getRegularColorP1() {
-        return Mod::get()->getSavedValue<int>("outline-color-p1");
-    }
-
-    inline int getRegularColorP2() {
-        return Mod::get()->getSavedValue<int>(getSeparateDualIcons() ? "outline-color-p2" : "outline-color-p1");
-    }
-
-    inline void setRegularColor(unsigned int color) {
-        Mod::get()->setSavedValue<unsigned int>(isSDIDualIcon() ? "outline-color-p2" : "outline-color-p1", color);
-    }
-
-    inline ccColor3B getColor() {
-        return hasOverride() ? getOverrideColor() : GameManager::get()->colorForIdx(getRegularColor());
-    }
-
-    inline ccColor3B getP1Color() {
-        return hasOverrideP1() ? getOverrideColorP1() : GameManager::get()->colorForIdx(getRegularColorP1());
-    }
-
-    inline ccColor3B getP2Color() {
-        return hasOverrideP2() ? getOverrideColorP2() : GameManager::get()->colorForIdx(getRegularColorP2());
-    }
-
-    inline ccColor3B getColorFor(bool p2) {
-        return p2 ? getP2Color() : getP1Color();
     }
 }

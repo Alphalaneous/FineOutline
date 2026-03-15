@@ -1,11 +1,10 @@
 #include "CharacterColorPage.hpp"
-#include "SimplePlayer.hpp"
-#include "Utils.hpp"
+#include "../include/FineOutline.hpp"
 
 void MyCharacterColorPage::updateColor(const ccColor3B& c) {
     for (auto children : m_playerObjects->asExt()) {
         if (auto player = typeinfo_cast<SimplePlayer*>(children)) {
-            static_cast<MySimplePlayer*>(player)->setOutlineColor(c);
+            alpha::fine_outline::setOutlineColorS(player, c);
         }
     }
 }
@@ -42,8 +41,7 @@ bool MyCharacterColorPage::init() {
 
     for (auto children : m_playerObjects->asExt<CCNode>()) {
         if (auto player = typeinfo_cast<SimplePlayer*>(children)) {
-            auto p = static_cast<MySimplePlayer*>(player);
-            p->setOutlineColor(alpha::fine_outline::getColor());
+            alpha::fine_outline::setOutlineColorS(player, alpha::fine_outline::getColor());
         }
     }
 
@@ -56,7 +54,7 @@ bool MyCharacterColorPage::init() {
     m_cursors->addObject(fields->m_outlineSelector);
 
     m_mainLayer->addChild(fields->m_outlineSelector);
-    setOutlineSelectorPos(alpha::fine_outline::getRegularColor());
+    setOutlineSelectorPos(alpha::fine_outline::getColorIndex());
 
     auto outlineColorSpr = CCSprite::createWithSpriteFrameName("GJ_colorBtn_001.png");
     outlineColorSpr->setScale(0.65f);
@@ -84,13 +82,13 @@ bool MyCharacterColorPage::init() {
     fields->m_outlineColorBtn = CCMenuItemSpriteExtra::create(outlineColorSpr, this, menu_selector(MyCharacterColorPage::onOutlineColor));
     fields->m_outlineColorBtn->setVisible(false);
     fields->m_outlineColorBtn->setID("outline-color-button"_spr);
-    fields->m_outlineColorBtn->setColor(alpha::fine_outline::getOverrideColor());
+    fields->m_outlineColorBtn->setColor(alpha::fine_outline::getCustomColor());
 
     fields->m_customColorToggle = CCMenuItemToggler::createWithStandardSprites(this, menu_selector(MyCharacterColorPage::onCustomColorToggle), 0.6f);
     fields->m_customColorToggle->setID("custom-color-toggle"_spr);
     fields->m_customColorToggle->setVisible(false);
     fields->m_customColorToggle->setPosition(m_glowToggler->getPosition());
-    fields->m_customColorToggle->toggle(alpha::fine_outline::hasOverride());
+    fields->m_customColorToggle->toggle(alpha::fine_outline::usesCustomColor());
 
     if (auto buttonsMenu = typeinfo_cast<CCMenu*>(m_mainLayer->getChildByID("buttons-menu"))) {
 
@@ -147,7 +145,7 @@ void MyCharacterColorPage::onCustomColorToggle(CCObject* sender) {
     bool toggled = !static_cast<CCMenuItemToggler*>(sender)->isToggled();
     auto fields = m_fields.self();
 
-    alpha::fine_outline::setOverride(toggled);
+    alpha::fine_outline::useCustomColor(alpha::fine_outline::PlayerIcon::SELECTED, toggled);
     fields->m_outlineColorBtn->setVisible(toggled);
 
     updateColor(alpha::fine_outline::getColor());
@@ -156,19 +154,19 @@ void MyCharacterColorPage::onCustomColorToggle(CCObject* sender) {
 void MyCharacterColorPage::onOutlineColor(CCObject* sender) {
     auto fields = m_fields.self();
 
-    auto colorPopup = geode::ColorPickPopup::create(alpha::fine_outline::getOverrideColor());
+    auto colorPopup = geode::ColorPickPopup::create(alpha::fine_outline::getCustomColor());
     colorPopup->setCallback([this, fields] (ccColor4B const& c) {
 
-        if (alpha::fine_outline::isSDIDualIcon()) {
+        if (alpha::fine_outline::isSeparate()) {
             for (auto children : m_playerObjects->asExt<CCNode>()) {
                 if (auto player = typeinfo_cast<SimplePlayer*>(children)) {
-                    auto p = static_cast<MySimplePlayer*>(player);
-                    p->setOutlineColor(ccColor3B{c.r, c.g, c.b});
+                    alpha::fine_outline::setOutlineColorS(player, ccColor3B{c.r, c.g, c.b});
                 }
             }
             fields->m_outlineColorBtn->setColor(ccColor3B{c.r, c.g, c.b});
         }
-        alpha::fine_outline::setOverrideColor(ccColor3B{c.r, c.g, c.b});
+
+        alpha::fine_outline::setCustomColor(alpha::fine_outline::PlayerIcon::SELECTED, ccColor3B{c.r, c.g, c.b});
     });
     colorPopup->show();
 }
@@ -207,7 +205,7 @@ void MyCharacterColorPage::onMode(CCObject* sender) {
     if (fields->m_disable) return;
 
     m_colorMode = sender->getTag();
-    fields->m_outlineColorBtn->setVisible(m_colorMode == 3 && alpha::fine_outline::hasOverride());
+    fields->m_outlineColorBtn->setVisible(m_colorMode == 3 && alpha::fine_outline::usesCustomColor());
     fields->m_customColorToggle->setVisible(m_colorMode == 3);
     fields->m_customColorLabel->setVisible(m_colorMode == 3);
 
@@ -232,11 +230,11 @@ void MyCharacterColorPage::onPlayerColor(cocos2d::CCObject* sender) {
     if (fields->m_disable) return CharacterColorPage::onPlayerColor(sender);
 
     if (m_colorMode == 3) {
-        alpha::fine_outline::setRegularColor(sender->getTag());
+        alpha::fine_outline::setColorIndex(alpha::fine_outline::PlayerIcon::SELECTED, sender->getTag());
 
         setOutlineSelectorPos(sender->getTag());
 
-        if (!alpha::fine_outline::hasOverride()) {
+        if (!alpha::fine_outline::usesCustomColor()) {
             updateColor(GameManager::get()->colorForIdx(sender->getTag()));
         }
     }
@@ -253,8 +251,7 @@ void MyCharacterColorPage::toggleShip(CCObject* sender) {
     for (auto children : m_playerObjects->asExt<CCNode>()) {
         if (children->getParent()->getID() == "ship-button") {
             if (auto player = typeinfo_cast<SimplePlayer*>(children)) {
-                auto p = static_cast<MySimplePlayer*>(player);
-                p->setOutlineColor(alpha::fine_outline::getColor());
+                alpha::fine_outline::setOutlineColorS(player, alpha::fine_outline::getColor());
             }
             return;
         }
@@ -268,12 +265,10 @@ void MyCharacterColorPage::setColorOnGarage() {
     auto scene = CCDirector::get()->m_pRunningScene;
     if (auto garage = scene->getChildByType<GJGarageLayer>(0)) {
         if (garage->m_playerObject) {
-            auto p = static_cast<MySimplePlayer*>(garage->m_playerObject);
-            p->setOutlineColor(alpha::fine_outline::getP1Color());
+            alpha::fine_outline::setOutlineColorS(garage->m_playerObject, alpha::fine_outline::getColor(alpha::fine_outline::PlayerIcon::ONE));
         }
         if (auto player2 = typeinfo_cast<SimplePlayer*>(garage->getChildByID("player2-icon"))) {
-            auto p = static_cast<MySimplePlayer*>(player2);
-            p->setOutlineColor(alpha::fine_outline::getP2Color());
+            alpha::fine_outline::setOutlineColorS(player2, alpha::fine_outline::getColor(alpha::fine_outline::PlayerIcon::TWO));
         }
     }
 }

@@ -53,11 +53,16 @@ void MyPlayerObject::updateOutlineColors() {
 
 void MyPlayerObject::setOutlineColor(const ccColor3B& color) {
     auto fields = m_fields.self();
-    fields->m_outlineColor = std::move(color);
+    fields->m_outlineColor = color;
 
     fields->m_usingDefaultColor = color == ccColor3B{0, 0, 0};
 
     updateOutlineColors();
+}
+
+ccColor3B MyPlayerObject::getOutlineColor() {
+    auto fields = m_fields.self();
+    return fields->m_outlineColor;
 }
 
 void MyPlayerObject::enableOutlineColor(bool enable) {

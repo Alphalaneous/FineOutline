@@ -16,7 +16,10 @@ class $modify(MySimplePlayer, SimplePlayer) {
     bool init(int id);
     void setupOutlines();
     void enableOutlineColor(bool enable);
+    
     void setOutlineColor(const ccColor3B& color);
+    ccColor3B getOutlineColor();
+
     void updateOutlineColors();
     void updatePlayerFrame(int p0, IconType p1);
 };

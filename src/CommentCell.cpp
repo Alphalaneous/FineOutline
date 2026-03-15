@@ -1,6 +1,5 @@
 #include "CommentCell.hpp"
-#include "SimplePlayer.hpp"
-#include "Utils.hpp"
+#include "../include/FineOutline.hpp"
 
 void MyCommentCell::loadFromComment(GJComment* p0) {
     CommentCell::loadFromComment(p0);
@@ -8,7 +7,6 @@ void MyCommentCell::loadFromComment(GJComment* p0) {
     if (p0->m_accountID != GJAccountManager::get()->m_accountID) return;
 
     if (auto player = typeinfo_cast<SimplePlayer*>(getChildByIDRecursive("player-icon"))) {
-        auto p = static_cast<MySimplePlayer*>(player);
-        p->setOutlineColor(alpha::fine_outline::getP1Color());
+        alpha::fine_outline::setOutlineColorS(player, alpha::fine_outline::getColor(alpha::fine_outline::PlayerIcon::ONE));
     }
 }

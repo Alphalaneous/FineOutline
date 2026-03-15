@@ -1,15 +1,21 @@
 #include "GJGarageLayer.hpp"
-#include "SimplePlayer.hpp"
-#include "Utils.hpp"
+#include "../include/FineOutline.hpp"
+#include "Geode/loader/Log.hpp"
 
 bool MyGJGarageLayer::init() {
     if (!GJGarageLayer::init()) return false;
 
     if (m_playerObject) {
-        static_cast<MySimplePlayer*>(m_playerObject)->setOutlineColor(alpha::fine_outline::getP1Color());
+        log::info("before set p1: {}", m_playerObject);
+
+        // it freezes running this
+        alpha::fine_outline::setOutlineColorS(m_playerObject, {255, 0, 255});//alpha::fine_outline::getColor(alpha::fine_outline::PlayerIcon::ONE));
+        log::info("after set p1");
     }
     if (auto player2 = typeinfo_cast<SimplePlayer*>(getChildByID("player2-icon"))) {
-        static_cast<MySimplePlayer*>(player2)->setOutlineColor(alpha::fine_outline::getP2Color());
+        log::info("before set p2");
+        alpha::fine_outline::setOutlineColorS(player2, alpha::fine_outline::getColor(alpha::fine_outline::PlayerIcon::TWO));
+        log::info("after set p2");
     }
 
     auto fields = m_fields.self();
@@ -29,10 +35,10 @@ void MyGJGarageLayer::onSelect(cocos2d::CCObject* sender) {
     GJGarageLayer::onSelect(sender);
     
     if (m_playerObject) {
-        static_cast<MySimplePlayer*>(m_playerObject)->setOutlineColor(alpha::fine_outline::getP1Color());
+        alpha::fine_outline::setOutlineColorS(m_playerObject, alpha::fine_outline::getColor(alpha::fine_outline::PlayerIcon::ONE));
     }
     if (auto player2 = typeinfo_cast<SimplePlayer*>(getChildByID("player2-icon"))) {
-        static_cast<MySimplePlayer*>(player2)->setOutlineColor(alpha::fine_outline::getP2Color());
+        alpha::fine_outline::setOutlineColorS(player2, alpha::fine_outline::getColor(alpha::fine_outline::PlayerIcon::TWO));
     }
 }
 
@@ -40,28 +46,28 @@ void MyGJGarageLayer::onSwap(cocos2d::CCObject* sender) {
     auto fields = m_fields.self();
     (this->*fields->m_swapHandler)(sender);
     
-    auto overrideP1 = alpha::fine_outline::hasOverrideP1();
-    auto overrideP2 = alpha::fine_outline::hasOverrideP2();
+    auto overrideP1 = alpha::fine_outline::usesCustomColor(alpha::fine_outline::PlayerIcon::ONE);
+    auto overrideP2 = alpha::fine_outline::usesCustomColor(alpha::fine_outline::PlayerIcon::TWO);
 
-    auto oColorP1 = alpha::fine_outline::getOverrideColorP1();
-    auto oColorP2 = alpha::fine_outline::getOverrideColorP2();
+    auto oColorP1 = alpha::fine_outline::getCustomColor(alpha::fine_outline::PlayerIcon::ONE);
+    auto oColorP2 = alpha::fine_outline::getCustomColor(alpha::fine_outline::PlayerIcon::TWO);
 
-    auto rColorP1 = alpha::fine_outline::getRegularColorP1();
-    auto rColorP2 = alpha::fine_outline::getRegularColorP2();
+    auto rColorP1 = alpha::fine_outline::getColorIndex(alpha::fine_outline::PlayerIcon::ONE);
+    auto rColorP2 = alpha::fine_outline::getColorIndex(alpha::fine_outline::PlayerIcon::TWO);
 
-    Mod::get()->setSavedValue("override-color", overrideP2); 
-    Mod::get()->setSavedValue("override-color-p2", overrideP1); 
+    alpha::fine_outline::useCustomColor(alpha::fine_outline::PlayerIcon::ONE, overrideP2);
+    alpha::fine_outline::useCustomColor(alpha::fine_outline::PlayerIcon::TWO, overrideP1);
 
-    Mod::get()->setSavedValue("p1-color", oColorP2); 
-    Mod::get()->setSavedValue("p2-color", oColorP1); 
+    alpha::fine_outline::setCustomColor(alpha::fine_outline::PlayerIcon::ONE, oColorP2);
+    alpha::fine_outline::setCustomColor(alpha::fine_outline::PlayerIcon::TWO, oColorP1);
 
-    Mod::get()->setSavedValue("outline-color-p1", rColorP2); 
-    Mod::get()->setSavedValue("outline-color-p2", rColorP1);
+    alpha::fine_outline::setColorIndex(alpha::fine_outline::PlayerIcon::ONE, rColorP2);
+    alpha::fine_outline::setColorIndex(alpha::fine_outline::PlayerIcon::TWO, rColorP1);
 
     if (m_playerObject) {
-        static_cast<MySimplePlayer*>(m_playerObject)->setOutlineColor(alpha::fine_outline::getP1Color());
+        alpha::fine_outline::setOutlineColorS(m_playerObject, alpha::fine_outline::getColor(alpha::fine_outline::PlayerIcon::ONE));
     }
     if (auto player2 = typeinfo_cast<SimplePlayer*>(getChildByID("player2-icon"))) {
-        static_cast<MySimplePlayer*>(player2)->setOutlineColor(alpha::fine_outline::getP2Color());
+        alpha::fine_outline::setOutlineColorS(player2, alpha::fine_outline::getColor(alpha::fine_outline::PlayerIcon::TWO));
     }
 }

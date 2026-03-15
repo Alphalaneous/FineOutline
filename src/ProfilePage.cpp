@@ -1,6 +1,5 @@
 #include "ProfilePage.hpp"
-#include "SimplePlayer.hpp"
-#include "Utils.hpp"
+#include "../include/FineOutline.hpp"
 
 void MyProfilePage::getUserInfoFinished(GJUserScore* p0) {
     ProfilePage::getUserInfoFinished(p0);
@@ -35,7 +34,7 @@ void MyProfilePage::toggleShip(CCObject* sender) {
     auto playerMenu = m_mainLayer->getChildByID("player-menu");
     if (auto shipNode = playerMenu->getChildByID("player-ship")) {
         if (auto player = shipNode->getChildByType<SimplePlayer>(0)) {
-            static_cast<MySimplePlayer*>(player)->updateColors();
+            alpha::fine_outline::updateOutlineS(player);
         }
     }
 }
@@ -46,8 +45,7 @@ void MyProfilePage::setOutlineColor(bool p2) {
 
     for (auto menuChild : playerMenu->getChildrenExt()) {
         if (auto player = menuChild->getChildByType<SimplePlayer>(0)) {
-            auto p = static_cast<MySimplePlayer*>(player);
-            p->setOutlineColor(alpha::fine_outline::getColorFor(p2));
+            alpha::fine_outline::setOutlineColorS(player, alpha::fine_outline::getColor(static_cast<alpha::fine_outline::PlayerIcon>(p2)));
         }
     }
 }
@@ -70,7 +68,7 @@ void MyProfilePage::onShipToggle(CCObject* sender) {
     auto playerMenu = m_mainLayer->getChildByID("player-menu");
     if (auto shipNode = playerMenu->getChildByID("player-ship")) {
         if (auto player = shipNode->getChildByType<SimplePlayer>(0)) {
-            static_cast<MySimplePlayer*>(player)->updateColors();
+            alpha::fine_outline::updateOutlineS(player);
         }
     }
 }

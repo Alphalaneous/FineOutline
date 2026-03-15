@@ -1,13 +1,9 @@
 #include "GJBaseGameLayer.hpp"
-#include "PlayerObject.hpp"
-#include "Utils.hpp"
+#include "../include/FineOutline.hpp"
 
 void MyGJBaseGameLayer::createPlayer() {
     GJBaseGameLayer::createPlayer();
 
-    auto p1 = static_cast<MyPlayerObject*>(m_player1);
-    auto p2 = static_cast<MyPlayerObject*>(m_player2);
-
-    p1->setOutlineColor(alpha::fine_outline::getP1Color());
-    p2->setOutlineColor(alpha::fine_outline::getP2Color());
+    alpha::fine_outline::setOutlineColorP(m_player1, alpha::fine_outline::getColor(alpha::fine_outline::PlayerIcon::ONE));
+    alpha::fine_outline::setOutlineColorP(m_player2, alpha::fine_outline::getColor(alpha::fine_outline::PlayerIcon::TWO));
 }
