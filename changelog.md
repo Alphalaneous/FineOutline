@@ -1,3 +1,9 @@
+# 1.3.2
+- Tweaked shaders even more
+  - Less washed out for real this time
+- Fix a bug where custom colors wouldn't update visually in the Icon Kit
+- Fix a bug where the default outline color was green
+
 # 1.3.1
 - Tweaked shaders even more
   - Less washed out

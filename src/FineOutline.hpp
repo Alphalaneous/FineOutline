@@ -94,13 +94,13 @@ namespace alpha::fine_outline {
         inline int getColorIndex(PlayerIcon player = PlayerIcon::SELECTED) {
             switch (player) {
                 case PlayerIcon::SELECTED: {
-                    return Mod::get()->getSavedValue<int>(isEditingP2() ? "outline-color-p2" : "outline-color-p1");
+                    return Mod::get()->getSavedValue<int>(isEditingP2() ? "outline-color-p2" : "outline-color-p1", 15);
                 }
                 case PlayerIcon::ONE: {
-                    return Mod::get()->getSavedValue<int>("outline-color-p1");
+                    return Mod::get()->getSavedValue<int>("outline-color-p1", 15);
                 }
                 case PlayerIcon::TWO: {
-                    return Mod::get()->getSavedValue<int>(Loader::get()->getLoadedMod("weebify.separate_dual_icons") ? "outline-color-p2" : "outline-color-p1");
+                    return Mod::get()->getSavedValue<int>(Loader::get()->getLoadedMod("weebify.separate_dual_icons") ? "outline-color-p2" : "outline-color-p1", 15);
                 }
             }
             return 0;
@@ -179,21 +179,10 @@ namespace alpha::fine_outline {
                     vec4 c = texture2D(CC_Texture0, v_texCoord);
 
                     float brightness = dot(c.rgb, vec3(1./3.)) / max(c.a, 0.001);
+                    float isOutline = smoothstep(0.5, 0.0, brightness);
 
-                    float outlineMask = smoothstep(1.0, 0.0, brightness);
-
-                    float shadowMask = smoothstep(0.5, 0.0, brightness) * (1.0 - outlineMask);
-
-                    vec3 shadowDarkened = mix(c.rgb, c.rgb * 0.1, shadowMask);
-
-                    vec3 finalRGB = mix(shadowDarkened, vec3(1.0), outlineMask);
-
-                    float isOutline = smoothstep(0.3, 0.0, brightness);
-                    float finalA = c.a * (1.0 - isOutline);
-
-                    finalRGB *= finalA;
-
-                    gl_FragColor = vec4(finalRGB, finalA) * v_fragmentColor;
+                    c.a = c.a * (1.0 - isOutline);
+                    gl_FragColor = c * v_fragmentColor;
                 }
             )";
             return frag;

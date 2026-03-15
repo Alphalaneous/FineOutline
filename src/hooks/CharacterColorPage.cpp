@@ -156,17 +156,15 @@ void MyCharacterColorPage::onOutlineColor(CCObject* sender) {
 
     auto colorPopup = geode::ColorPickPopup::create(alpha::fine_outline::impl::getCustomColor());
     colorPopup->setCallback([this, fields] (ccColor4B const& c) {
-
-        if (alpha::fine_outline::impl::isSeparate()) {
-            for (auto children : m_playerObjects->asExt<CCNode>()) {
-                if (auto player = typeinfo_cast<SimplePlayer*>(children)) {
-                    alpha::fine_outline::impl::setOutlineColor(player, ccColor3B{c.r, c.g, c.b});
-                }
+        auto color = ccColor3B{c.r, c.g, c.b};
+        for (auto children : m_playerObjects->asExt<CCNode>()) {
+            if (auto player = typeinfo_cast<SimplePlayer*>(children)) {
+                alpha::fine_outline::impl::setOutlineColor(player, color);
             }
-            fields->m_outlineColorBtn->setColor(ccColor3B{c.r, c.g, c.b});
         }
+        fields->m_outlineColorBtn->setColor(color);
 
-        alpha::fine_outline::impl::setCustomColor(alpha::fine_outline::PlayerIcon::SELECTED, ccColor3B{c.r, c.g, c.b});
+        alpha::fine_outline::impl::setCustomColor(alpha::fine_outline::PlayerIcon::SELECTED, color);
     });
     colorPopup->show();
 }
