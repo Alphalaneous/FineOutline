@@ -6,21 +6,19 @@ void MySimplePlayer::setupOutlines() {
 
     fields->m_outlines.clear();
 
-    if (fields->m_usingDefaultColor) return;
-
     fields->m_outlines[m_firstLayer] = alpha::fine_outline::shaders::createOutline(m_firstLayer);
-    alpha::fine_outline::shaders::addShaders(m_firstLayer);
+    if (!fields->m_usingDefaultColor) alpha::fine_outline::shaders::addShaders(m_firstLayer);
 
     if (m_robotSprite && m_robotSprite->m_paSprite && m_robotSprite->m_paSprite->m_spriteParts) {
         for (auto part : m_robotSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
             fields->m_outlines[part] = alpha::fine_outline::shaders::createOutline(part);
-            alpha::fine_outline::shaders::addShaders(part);
+            if (!fields->m_usingDefaultColor) alpha::fine_outline::shaders::addShaders(part);
         }
     }
     if (m_spiderSprite && m_spiderSprite->m_paSprite && m_spiderSprite->m_paSprite->m_spriteParts) {
         for (auto part : m_spiderSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
             fields->m_outlines[part] = alpha::fine_outline::shaders::createOutline(part);
-            alpha::fine_outline::shaders::addShaders(part);
+            if (!fields->m_usingDefaultColor) alpha::fine_outline::shaders::addShaders(part);
         }
     }
 }
@@ -43,12 +41,10 @@ void MySimplePlayer::enableOutlineColor(bool enable) {
     auto fields = m_fields.self();
     fields->m_usesOutlineColor = enable;
 
-    if (fields->m_usingDefaultColor) return;
-
     for (auto [k, v] : fields->m_outlines) {
-        if (enable) alpha::fine_outline::shaders::addShaders(k);
+        if (enable && !fields->m_usingDefaultColor) alpha::fine_outline::shaders::addShaders(k);
         else alpha::fine_outline::shaders::removeShaders(k);
-        if (v) v->setVisible(enable);
+        if (v) v->setVisible(enable && !fields->m_usesOutlineColor);
     }
 }
 
