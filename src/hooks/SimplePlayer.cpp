@@ -1,16 +1,12 @@
 #include "SimplePlayer.hpp"
 #include "../FineOutline.hpp"
 
-bool MySimplePlayer::init(int id) {
-    if (!SimplePlayer::init(id)) return false;
-    setupOutlines();
-    return true;
-}
-
 void MySimplePlayer::setupOutlines() {
     auto fields = m_fields.self();
 
     fields->m_outlines.clear();
+
+    if (fields->m_usingDefaultColor) return;
 
     fields->m_outlines[m_firstLayer] = alpha::fine_outline::shaders::createOutline(m_firstLayer);
     alpha::fine_outline::shaders::addShaders(m_firstLayer);

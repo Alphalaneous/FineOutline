@@ -1,3 +1,6 @@
+# 1.3.3
+- Fixed fine outline affecting icons without an outline color set
+
 # 1.3.2
 - Tweaked shaders even more
   - Less washed out for real this time

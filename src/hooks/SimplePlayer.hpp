@@ -9,11 +9,10 @@ class $modify(MySimplePlayer, SimplePlayer) {
     struct Fields {
         ccColor3B m_outlineColor;
         bool m_usesOutlineColor = true;
-        bool m_usingDefaultColor = false;
+        bool m_usingDefaultColor = true;
         std::unordered_map<CCSprite*, CCSprite*> m_outlines;
     };
 
-    bool init(int id);
     void setupOutlines();
     void enableOutlineColor(bool enable);
     

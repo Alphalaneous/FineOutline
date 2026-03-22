@@ -2,17 +2,13 @@
 #include "../FineOutline.hpp"
 #include "../BypassBatchNode.hpp"
 
-bool MyPlayerObject::init(int player, int ship, GJBaseGameLayer* gameLayer, cocos2d::CCLayer* layer, bool playLayer) {
-    if (!PlayerObject::init(player, ship, gameLayer, layer, playLayer)) return false;
-    setupOutlines();
-    return true;
-}
-
 void MyPlayerObject::setupOutlines() {
     auto fields = m_fields.self();
 
     fields->m_outlines.clear();
     
+    if (fields->m_usingDefaultColor) return;
+
     fields->m_outlines[m_iconSprite] = alpha::fine_outline::shaders::createOutline(m_iconSprite);
     fields->m_outlines[m_vehicleSprite] = alpha::fine_outline::shaders::createOutline(m_vehicleSprite);
 

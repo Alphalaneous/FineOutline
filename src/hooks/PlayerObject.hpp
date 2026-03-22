@@ -21,11 +21,9 @@ class $modify(MyPlayerObject, PlayerObject) {
     struct Fields {
         ccColor3B m_outlineColor;
         bool m_usesOutlineColor = true;
-        bool m_usingDefaultColor = false;
+        bool m_usingDefaultColor = true;
         std::unordered_map<CCSprite*, CCSprite*> m_outlines;
     };
-
-    bool init(int player, int ship, GJBaseGameLayer* gameLayer, cocos2d::CCLayer* layer, bool playLayer);
 
     void setupOutlines();
     void updateOutlineColors();
