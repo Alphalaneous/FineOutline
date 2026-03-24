@@ -11,9 +11,12 @@ class $modify(MyProfilePage, ProfilePage) {
         SEL_MenuHandler m_shipToggle;
     };
 
+    void setPlayerOutline(const matjson::Value& value, CCNode* playerMenu);
+    void loadPageFromUserInfo(GJUserScore* score);
     void getUserInfoFinished(GJUserScore* p0);
     void toggleShip(CCObject* sender);
+    void refreshIcons();
+    void onUpdate(cocos2d::CCObject* sender);
     void on2PToggle(CCObject* sender);
     void setOutlineColor(bool p2);
-    void onShipToggle(CCObject* sender);
 };

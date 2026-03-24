@@ -1,3 +1,8 @@
+# 1.4.0
+- Show other people's outline colors
+- Show outline colors in GJLevelScoreCell, GJRequestCell, and GJUserCell
+- Bug fixes
+
 # 1.3.3
 - Fixed fine outline affecting icons without an outline color set
 

@@ -5,6 +5,7 @@
 #include "hooks/PlayerObject.hpp"
 #include "ShaderCache.hpp"
 #include "../include/Enums.hpp"
+#include <hiimjasmine00.user_data_api/include/UserDataAPI.hpp>
 
 using namespace geode::prelude;
 
@@ -161,6 +162,26 @@ namespace alpha::fine_outline {
                 auto pl = static_cast<MySimplePlayer*>(player);
                 pl->updateOutlineColors();
             }
+        }
+
+        inline void setOutlineColorOnline(std::string_view id, CCNode* node, SimplePlayer* player) {
+            auto valueRes = user_data::get(node);
+            if (!valueRes) return;
+
+            auto value = valueRes.unwrap();
+            if (!value.isObject()) return;
+
+            auto colorStr = value[id];
+            if (!colorStr.isString()) return;
+
+            auto hexRes = colorStr.asString();
+            if (!hexRes) return;
+
+            auto colorRes = cc3bFromHexString(hexRes.unwrap());
+            if (!colorRes) return;
+
+            auto color = colorRes.unwrap();
+            alpha::fine_outline::impl::setOutlineColor(player, color);
         }
     }
 
