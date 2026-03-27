@@ -6,6 +6,8 @@
 void MyGJScoreCell::loadFromScore(GJUserScore* userScore) {
     GJScoreCell::loadFromScore(userScore);
 
+    if (!userScore) return;
+
     auto player = typeinfo_cast<SimplePlayer*>(getChildByIDRecursive("player-icon"));
     if (!player) return;
 
@@ -13,7 +15,8 @@ void MyGJScoreCell::loadFromScore(GJUserScore* userScore) {
         alpha::fine_outline::impl::setOutlineColor(player, alpha::fine_outline::impl::getColor(alpha::fine_outline::PlayerIcon::ONE));
     }
     else {
-        user_data::handleScoreCell(this, [this, player] (GJUserScore* score) {
+        user_data::handleScoreCell(this, [player = Ref(player)] (GJUserScore* score) {
+            if (!player || !score) return;
             alpha::fine_outline::impl::setOutlineColorOnline("player-1-color", score, player);
         });
     }

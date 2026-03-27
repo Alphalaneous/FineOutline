@@ -6,6 +6,8 @@
 void MyCommentCell::loadFromComment(GJComment* comment) {
     CommentCell::loadFromComment(comment);
 
+    if (!comment) return;
+
     auto player = typeinfo_cast<SimplePlayer*>(getChildByIDRecursive("player-icon"));
     if (!player) return;
 
@@ -13,7 +15,8 @@ void MyCommentCell::loadFromComment(GJComment* comment) {
         alpha::fine_outline::impl::setOutlineColor(player, alpha::fine_outline::impl::getColor(alpha::fine_outline::PlayerIcon::ONE));
     }
     else {
-        user_data::handleCommentCell(this, [this, player] (GJComment* comment) {
+        user_data::handleCommentCell(this, [player = Ref(player)] (GJComment* comment) {
+            if (!player || !comment) return;
             alpha::fine_outline::impl::setOutlineColorOnline("player-1-color", comment, player);
         });
     }

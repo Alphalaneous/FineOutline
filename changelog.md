@@ -1,3 +1,6 @@
+# 1.4.1
+- Attempt to fix some crashes
+
 # 1.4.0
 - Show other people's outline colors
 - Show outline colors in GJLevelScoreCell, GJRequestCell, and GJUserCell
