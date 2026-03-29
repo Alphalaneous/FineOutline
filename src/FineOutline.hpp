@@ -293,6 +293,7 @@ namespace alpha::fine_outline {
             blackOutline->setContentSize(spr->getContentSize());
             blackOutline->setID("black_outline"_spr);
             blackOutline->setPosition(spr->getContentSize()/2);
+            blackOutline->setOpacity(spr->getOpacity());
 
             if (auto prgOutline = ShaderCache::get()->getProgram("outline")) {
                 prgOutline->setUniformsForBuiltins();

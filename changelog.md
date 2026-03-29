@@ -1,3 +1,6 @@
+# 1.4.2
+- Fix outline opacity
+
 # 1.4.1
 - Attempt to fix some crashes
 
