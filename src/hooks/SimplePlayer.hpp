@@ -21,6 +21,4 @@ class $modify(MySimplePlayer, SimplePlayer) {
 
     void updateOutlineColors();
     void updatePlayerFrame(int p0, IconType p1);
-
-    void updateOpacity(float dt);
 };

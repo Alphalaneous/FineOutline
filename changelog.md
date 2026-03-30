@@ -1,3 +1,6 @@
+# 1.4.4
+- Don't do that.
+
 # 1.4.3
 - Fix another issue with outline opacity
 

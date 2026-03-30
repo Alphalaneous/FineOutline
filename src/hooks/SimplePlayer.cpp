@@ -21,8 +21,6 @@ void MySimplePlayer::setupOutlines() {
             if (!fields->m_usingDefaultColor) alpha::fine_outline::shaders::addShaders(part);
         }
     }
-
-    schedule(schedule_selector(MyPlayerObject::updateOpacity));
 }
 
 void MySimplePlayer::setOutlineColor(const ccColor3B& color) {
@@ -71,12 +69,4 @@ void MySimplePlayer::updateOutlineColors() {
 void MySimplePlayer::updatePlayerFrame(int p0, IconType p1) {
     SimplePlayer::updatePlayerFrame(p0, p1);
     updateOutlineColors();
-}
-
-void MySimplePlayer::updateOpacity(float dt) {
-    auto fields = m_fields.self();
-
-    for (auto [k, v] : fields->m_outlines) {
-        v->setOpacity(k->getOpacity());
-    }
 }
