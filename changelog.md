@@ -1,3 +1,6 @@
+# 1.4.3
+- Fix another issue with outline opacity
+
 # 1.4.2
 - Fix outline opacity
 

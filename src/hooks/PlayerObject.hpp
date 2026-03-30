@@ -42,4 +42,6 @@ class $modify(MyPlayerObject, PlayerObject) {
 
     void createRobot(int frame);
     void createSpider(int frame);
+
+    void updateOpacity(float dt);
 };

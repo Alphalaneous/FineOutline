@@ -25,6 +25,8 @@ void MyPlayerObject::setupOutlines() {
             if (!fields->m_usingDefaultColor) alpha::fine_outline::shaders::addShaders(part);
         }
     }
+
+    schedule(schedule_selector(MyPlayerObject::updateOpacity));
 }
 
 void MyPlayerObject::updateOutlineColors() {
@@ -119,4 +121,12 @@ void MyPlayerObject::createSpider(int frame) {
 
     alpha::fine_outline::utils::replaceVTable<alpha::fine_outline::BypassBatchNode>(m_spiderBatchNode);
     updateOutlineColors();
+}
+
+void MyPlayerObject::updateOpacity(float dt) {
+    auto fields = m_fields.self();
+
+    for (auto [k, v] : fields->m_outlines) {
+        v->setOpacity(k->getOpacity());
+    }
 }
