@@ -74,8 +74,8 @@ void MyProfilePage::loadPageFromUserInfo(GJUserScore* score) {
     ProfilePage::loadPageFromUserInfo(score);
     refreshIcons();
 
-    user_data::handleProfilePage(this, [this] (GJUserScore* score) {
-        refreshIcons();
+    user_data::handleProfilePage(this, [self = Ref(this)] (GJUserScore* score) {
+        self->refreshIcons();
     });
 }
 
