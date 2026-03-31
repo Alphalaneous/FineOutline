@@ -1,5 +1,6 @@
 # 1.4.6
-- More safety
+- More safety checks
+- Fix extra sprite not being colored
 
 # 1.4.5
 - More fixes

@@ -18,11 +18,19 @@ void MyPlayerObject::setupOutlines() {
             fields->m_outlines[part] = alpha::fine_outline::shaders::createOutline(part);
             if (!fields->m_usingDefaultColor) alpha::fine_outline::shaders::addShaders(part);
         }
+        if (m_robotSprite->m_extraSprite) {
+            fields->m_outlines[m_robotSprite->m_extraSprite] = alpha::fine_outline::shaders::createOutline(m_robotSprite->m_extraSprite);
+            if (!fields->m_usingDefaultColor) alpha::fine_outline::shaders::addShaders(m_robotSprite->m_extraSprite);
+        }
     }
     if (m_spiderSprite && m_spiderSprite->m_paSprite && m_spiderSprite->m_paSprite->m_spriteParts) {
         for (auto part : m_spiderSprite->m_paSprite->m_spriteParts->asExt<CCSpritePart>()) {
             fields->m_outlines[part] = alpha::fine_outline::shaders::createOutline(part);
             if (!fields->m_usingDefaultColor) alpha::fine_outline::shaders::addShaders(part);
+        }
+        if (m_spiderSprite->m_extraSprite) {
+            fields->m_outlines[m_spiderSprite->m_extraSprite] = alpha::fine_outline::shaders::createOutline(m_spiderSprite->m_extraSprite);
+            if (!fields->m_usingDefaultColor) alpha::fine_outline::shaders::addShaders(m_spiderSprite->m_extraSprite);
         }
     }
 
