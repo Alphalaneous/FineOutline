@@ -130,6 +130,7 @@ namespace alpha::fine_outline {
 
         template<PlayerType T>
         inline void setOutlineColor(T* player, const cocos2d::ccColor3B& color) {
+            if (!player) return;
             if constexpr (std::is_base_of_v<PlayerObject, T>) {
                 auto pl = static_cast<MyPlayerObject*>(player);
                 pl->setOutlineColor(color);
@@ -142,6 +143,7 @@ namespace alpha::fine_outline {
 
         template<PlayerType T>
         inline cocos2d::ccColor3B getOutlineColor(T* player) {
+            if (!player) return {};
             if constexpr (std::is_base_of_v<PlayerObject, T>) {
                 auto pl = static_cast<MyPlayerObject*>(player);
                 return pl->getOutlineColor();
@@ -154,6 +156,7 @@ namespace alpha::fine_outline {
 
         template<PlayerType T>
         inline void updateOutline(T* player) {
+            if (!player) return;
             if constexpr (std::is_base_of_v<PlayerObject, T>) {
                 auto pl = static_cast<MyPlayerObject*>(player);
                 pl->updateOutlineColors();
@@ -284,12 +287,14 @@ namespace alpha::fine_outline {
         }
 
         inline CCSprite* createOutline(CCSprite* spr) {
-            if (!spr) return nullptr;
-            if (!spr->displayFrame()) return nullptr;
+            if (!spr || !spr->getTexture()) return nullptr;
 
             spr->setCascadeOpacityEnabled(true);
 
-            auto blackOutline = CCSprite::createWithSpriteFrame(spr->displayFrame());
+            auto blackOutline = CCSprite::create();
+            blackOutline->setTexture(spr->getTexture());
+            blackOutline->setTextureRect(spr->getTextureRect(), spr->isTextureRectRotated(), spr->getTextureRect().size);
+            
             if (!blackOutline) return nullptr;
 
             blackOutline->setContentSize(spr->getContentSize());
