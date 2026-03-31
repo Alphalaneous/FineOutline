@@ -127,6 +127,6 @@ void MyPlayerObject::updateOpacity(float dt) {
     auto fields = m_fields.self();
 
     for (auto [k, v] : fields->m_outlines) {
-        v->setOpacity(k->getOpacity());
+        if (v) v->setOpacity(k->getOpacity());
     }
 }

@@ -7,15 +7,6 @@ void MyProfilePage::getUserInfoFinished(GJUserScore* p0) {
     ProfilePage::getUserInfoFinished(p0);
     auto fields = m_fields.self();
 
-    auto playerMenu = m_mainLayer->getChildByID("player-menu");
-
-    if (auto twoPToggler = static_cast<CCMenuItemSpriteExtra*>(m_mainLayer->getChildByID("left-menu")->getChildByID("2p-toggler"))) {
-        if (!fields->m_playerToggle) {
-            fields->m_playerToggle = twoPToggler->m_pfnSelector;
-            twoPToggler->m_pfnSelector = menu_selector(MyProfilePage::on2PToggle);
-        }
-    }
-
     if (m_ownProfile) {
         setOutlineColor(false);
 
@@ -24,6 +15,19 @@ void MyProfilePage::getUserInfoFinished(GJUserScore* p0) {
         data["player-2-color"] = cc3bToHexString(alpha::fine_outline::impl::getColor(alpha::fine_outline::PlayerIcon::TWO));
 
         user_data::upload(data);
+    }
+
+    auto playerMenu = m_mainLayer->getChildByID("player-menu");
+    if (!playerMenu) return;
+
+    auto leftMenu = m_mainLayer->getChildByID("left-menu");
+    if (!leftMenu) return;
+
+    if (auto twoPToggler = typeinfo_cast<CCMenuItemSpriteExtra*>(leftMenu->getChildByID("2p-toggler"))) {
+        if (!fields->m_playerToggle) {
+            fields->m_playerToggle = twoPToggler->m_pfnSelector;
+            twoPToggler->m_pfnSelector = menu_selector(MyProfilePage::on2PToggle);
+        }
     }
 }
 
@@ -45,7 +49,7 @@ void MyProfilePage::setPlayerOutline(const matjson::Value& value, CCNode* player
 }
 
 void MyProfilePage::refreshIcons() {
-    if (m_ownProfile) return;
+    if (m_ownProfile || !m_score) return;
 
     if (m_score->m_accountID == GJAccountManager::get()->m_accountID) {
         setOutlineColor(false);

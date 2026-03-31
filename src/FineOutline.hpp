@@ -285,10 +285,12 @@ namespace alpha::fine_outline {
 
         inline CCSprite* createOutline(CCSprite* spr) {
             if (!spr) return nullptr;
+            if (!spr->displayFrame()) return nullptr;
 
             spr->setCascadeOpacityEnabled(true);
 
             auto blackOutline = CCSprite::createWithSpriteFrame(spr->displayFrame());
+            if (!blackOutline) return nullptr;
 
             blackOutline->setContentSize(spr->getContentSize());
             blackOutline->setID("black_outline"_spr);
