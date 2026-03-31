@@ -1,3 +1,6 @@
+# 1.4.7
+- Even more safety
+
 # 1.4.6
 - More safety checks
 - Fix extra sprite not being colored on spiders and robots
