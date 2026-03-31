@@ -287,14 +287,11 @@ namespace alpha::fine_outline {
         }
 
         inline CCSprite* createOutline(CCSprite* spr) {
-            if (!spr || !spr->getTexture()) return nullptr;
+            if (!spr || !spr->getTexture() || !spr->displayFrame() || !spr->displayFrame()->getTexture()) return nullptr;
 
             spr->setCascadeOpacityEnabled(true);
 
-            auto blackOutline = CCSprite::create();
-            blackOutline->setTexture(spr->getTexture());
-            blackOutline->setTextureRect(spr->getTextureRect(), spr->isTextureRectRotated(), spr->getTextureRect().size);
-            
+            auto blackOutline = CCSprite::createWithSpriteFrame(spr->displayFrame());
             if (!blackOutline) return nullptr;
 
             blackOutline->setContentSize(spr->getContentSize());
