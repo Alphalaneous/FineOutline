@@ -1,3 +1,7 @@
+# 1.4.8
+- Fix outline being invisible
+- Fix outline not showing on opposite player's death effect in dual
+
 # 1.4.7
 - Even more safety
 

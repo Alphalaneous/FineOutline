@@ -7,4 +7,6 @@ using namespace geode::prelude;
 
 class $modify(MyGJBaseGameLayer, GJBaseGameLayer) {
     void createPlayer();
+    void resetPlayer();
+    void playExitDualEffect(PlayerObject* player);
 };
